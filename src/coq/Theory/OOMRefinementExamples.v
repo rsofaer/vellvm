@@ -303,6 +303,7 @@ Module Infinite.
 
       Import MMEP.MMSP.
       Import MemoryBigIntptr.MMEP.MMSP.
+      Import PROV.
       epose proof allocate_dtyp_spec_can_always_succeed m m (mkMemState (ms_memory_stack m) (next_provenance (ms_provenance m))) (DTYPE_I 64) 1 _ _ _ _ _ as (ms_final & addr & ALLOC).
 
       split.

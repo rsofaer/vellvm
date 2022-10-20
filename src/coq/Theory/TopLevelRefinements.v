@@ -392,17 +392,17 @@ Module Type TopLevelRefinements (IS : InterpreterStack) (TOP : LLVMTopLevel IS).
       intros u E OOM FAIL UB.
       repeat break_match; subst;
         unfold concretize_uvalue in *.
-      - induction u; cbn;
-          rewrite concretize_uvalueM_equation;
-          rewrite concretize_uvalueM_equation in Heqe;
-          try solve
-              [ inv Heqe
-              | destruct (default_dvalue_of_dtyp t); cbn in *; inv Heqe
-              ].
-        all: admit.
-      - admit.
-      - admit.
-      - admit.
+      (* - induction u; cbn; *)
+      (*     rewrite concretize_uvalueM_equation; *)
+      (*     rewrite concretize_uvalueM_equation in Heqe; *)
+      (*     try solve *)
+      (*         [ inv Heqe *)
+      (*         | destruct (default_dvalue_of_dtyp t); cbn in *; inv Heqe *)
+      (*         ]. *)
+      (*   all: admit. *)
+      (* - admit. *)
+      (* - admit. *)
+      (* - admit. *)
     Admitted.
 
     Lemma PickUvalue_handler_correct :
