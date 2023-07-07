@@ -4305,7 +4305,7 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
         }
 
         cbn.
-        break_match; [break_match|]; split; tauto.
+        break_match; [break_match|]; [split| |]; tauto.
       - destruct READ as [?ms' [?ms'' [[?EQ1 ?EQ2] READ]]].
         subst ms'0 ms''.
         repeat eexists.
@@ -4330,7 +4330,7 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
         }
 
         cbn.
-        break_match; [break_match|]; split; tauto.
+        break_match; [break_match|]; [split | |]; tauto.
     Qed.
 
     Lemma find_free_block_extend_reads :
@@ -6629,7 +6629,7 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
 
         initial_memory_read_ub :
         forall ptr byte,
-          read_byte_prop initial_memory_state ptr byte
+          ~ read_byte_prop initial_memory_state ptr byte
       }.
 
     Record initial_frame_prop : Prop :=
@@ -6768,8 +6768,12 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
         rewrite <- HEAP.
         cbn.
         apply empty_heap_heap_empty.
-      - intros ptr byte.
-        solve_read_byte_prop.
+      - intros ptr byte READ.
+        red in READ.
+        cbn in READ.
+        destruct READ as (?&?&(?&?)&CONTRA); subst.
+        rewrite read_byte_raw_memory_empty in CONTRA.
+        auto.
     Qed.
 
     End MemoryPrimatives.

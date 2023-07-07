@@ -9272,10 +9272,10 @@ cofix CIH
 
       break_match_hyp.
       destruct READ; subst; auto.
+      contradiction.
 
-      cbn in Heqb0.
-      rewrite Heqb0 in Heqb.
-      discriminate.
+      cbn in READ.
+      rewrite Heqb in READ; auto.
     - epose proof fin_inf_read_byte_raw_None _ _ _ MSR Heqo.
       cbn.
       eexists. eexists.
@@ -9370,10 +9370,11 @@ intros addr_fin addr_inf ms_fin ms_inf byte_inf byte_fin MSR ADDR_CONV BYTE_REF 
       apply lift_SByte_convert_SByte_inverse in BYTE_REF'.
       rewrite <- H1 in BYTE_REF'.
       apply lift_SByte_injective in BYTE_REF'; subst; auto.
+      contradiction.
 
-      cbn in Heqb0.
-      rewrite Heqb0 in Heqb.
-      discriminate.
+      cbn in READ.
+      rewrite Heqb in READ.
+      contradiction.
     - epose proof inf_fin_read_byte_raw_None _ _ _ MSR Heqo.
       cbn.
       eexists. eexists.
@@ -20237,27 +20238,13 @@ intros addr_fin addr_inf ms_fin ms_inf byte_inf byte_fin MSR ADDR_CONV BYTE_REF 
                               cbn; auto.
                             }
 
-                            intros a1 b RETa RETb AB.
-
-
-                            econstructor.
-                            inversion RUN; subst.
-                            { exfalso; eapply EQ; eauto. }
-
-                            { (* OOM *)
-                              destruct e.
-
-                              rewrite HT1.
-                              cbn.
-                              rewrite get_inf_tree_equation.
-                              cbn.
-                              unfold raiseOOM.
-                              rewrite bind_trigger.
-                              unfold print_msg.
-                              reflexivity.
+                            { intros a1 b RETa RETb AB.
+                              apply Returns_vis_inversion in RETb.
+                              destruct RETb as [[] _].
                             }
 
-                            subst_existT.
+                            cbn in HANDLER.
+
                             admit.
                           }
 
