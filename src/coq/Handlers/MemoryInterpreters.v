@@ -709,6 +709,116 @@ Module Type MemoryExecInterpreter (LP : LLVMParams) (MP : MemoryParams LP) (MMEP
       destruct HANDLE_CORRECT as [[ms' [ub_msg UB]] | HANDLE_CORRECT].
       { (* UB.. *)
         left.
+        exists ub_msg.
+        split.
+        {
+          pose proof read_byte_correct.
+        }
+
+
+        { cbn.
+          cbn in UB.
+          red in UB.
+          red in UB.
+          unfold handle_intrinsic.
+          destruct i.
+          cbn in *.
+          break_match.
+          { destruct UB.
+            - clear Heqb.
+              red in H.
+              repeat (break_match_hyp; [cbn in H; contradiction|]).
+              repeat (break_match_hyp; cbn in H; try contradiction); subst.
+              + cbn.
+                red in H.
+                unfold memcpy.
+                break_match_hyp.
+                { cbn.
+                  unfold raiseUB.
+                  repeat rewrite bind_bind.
+                  repeat rewrite bind_trigger.
+                  unfold print_msg.
+                  pstep; red; cbn.
+                  constructor.
+                  intros [].
+                }
+
+                unfold MM.OVER_H.no_overlap, OVER_H.no_overlap, MM.OVER.overlaps, OVER.overlaps in *.
+                break_match_hyp.
+                { repeat red in H.
+                  destruct H as [READ_UB | WRITE_UB].
+                  { cbn in READ_UB.
+                    destruct READ_UB.
+                    - destruct H.
+                      + red in H.
+                        break_match_hyp_inv.
+                      + destruct H as (?&?&?&?).
+                        destruct H0.
+                        * red in H0.
+                          break_match_hyp_inv.
+                        * destruct H0 as (?&?&?&?).
+                          red in H0.
+                          break_match_hyp_inv.
+                          red in H1.
+                          break_match_hyp_inv.
+                    - unfold read_bytes.
+                      unfold MemHelpers.get_consecutive_ptrs.
+                      destruct H as (?&?&?&?).
+                      destruct H as (?&?&?&?).
+                      red in H.
+                      break_match_hyp_inv.
+                      destruct H1 as (?&?&?).
+                      destruct H as (?&?).
+                      red in H.
+                      break_match_hyp_inv.
+                      red in H1.
+                      break_match_hyp_inv.
+
+                      cbn.
+                      repeat rewrite bind_ret_l.
+                      cbn.
+                      rewrite Heqs.
+                      cbn.
+                      repeat rewrite bind_ret_l.
+                      cbn.
+                      setoid_rewrite Heqo0.
+                      cbn.
+                      repeat rewrite bind_ret_l.
+                      cbn.
+
+                      clear Heqo0.
+                      induction l1.
+                      + cbn in H0; contradiction.
+                      + cbn in H0.
+                        destruct H0.
+                        * cbn.
+                          repeat rewrite bind_bind.
+                      
+                      break_match_goal
+                      
+                  }
+
+                }
+
+                cbn in *.
+              admit.
+            - destruct H as (?&?&?&[]).
+          }
+
+          break_match_hyp.
+          { destruct UB.
+            - admit.
+            - destruct H as (?&?&?&[]).
+          }
+
+          break_match_hyp.
+          { destruct UB.
+            - admit.
+            - destruct H as (?&?&?&[]).
+          }
+
+          contradiction.            
+        }
         exists ub_msg; eauto.
       }
 

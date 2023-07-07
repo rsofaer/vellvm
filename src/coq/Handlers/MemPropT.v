@@ -579,8 +579,10 @@ Proof.
   refine
     (fun st ms t =>
        (* UB *)
-       (exists msg_spec,
-           spec ms (raise_ub msg_spec)) \/
+       (exists msg,
+           t ≈ (raise_ub msg) /\
+             (exists msg_spec,
+                 spec ms (raise_ub msg_spec))) \/
          (* Error *)
          ((exists msg,
               t ≈ (raise_error msg) /\
