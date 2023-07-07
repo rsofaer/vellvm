@@ -4150,9 +4150,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     forall ms st,
       (@MemMonad_valid_state ExtraState MemM (itree Eff) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ms st) ->
       pre ms st ->
-      (* UB catchall *)
-      (exists ms' msg_spec,
-          @raise_ub err_ub_oom _ X msg_spec {{ ms }} ∈ {{ ms' }} spec) \/
         ( (* exists a behaviour in exec that lines up with spec.
 
                Technically this should be something along the lines of...
@@ -4246,18 +4243,11 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     unfold exec_correct in *.
     intros ms st VALID PRE.
     specialize (M_CORRECT ms st VALID PRE).
-    destruct M_CORRECT as [[ub_ms' [msg M_UB]] | M_CORRECT].
-    { (* UB *)
-      left.
-      exists ub_ms'. exists msg.
-      left; auto.
-    }
 
     destruct M_CORRECT as [e [st' [ms' [M_EXEC_CORRECT [M_SPEC_CORRECT M_POST]]]]].
     destruct e as [[[[[[[oom_e] | [[ub_e] | [[err_e] | e']]]]]]]] eqn:He.
 
     - (* OOM *)
-      right.
       exists (raise_oom oom_e).
       exists st'.
       exists ms'.
@@ -4291,13 +4281,40 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
       intros [x CONTRA].
       inv CONTRA.
     - (* UB *)
-      left.
-      exists ms'. exists ub_e.
-      cbn.
-      left.
-      apply M_SPEC_CORRECT.
+      exists (raise_ub ub_e).
+      exists st'.
+      exists ms'.
+
+      split.
+      { (* Exec *)
+        cbn in M_EXEC_CORRECT.
+        red in M_EXEC_CORRECT.
+        cbn. red.
+        destruct M_EXEC_CORRECT as [m2 [[ub_msg UB] EXEC]].
+        exists (raise_ub ub_msg).
+        split.
+        cbn.
+        eexists; reflexivity.
+        cbn.
+        cbn in EXEC.
+        rewrite MemMonad_run_bind.
+        rewrite EXEC.
+        rewrite UB.
+        repeat (rewrite rbm_raise_bind; [| typeclasses eauto]).
+        reflexivity.
+      }
+
+      split.
+      { (* In spec *)
+        cbn.
+        left.
+        apply M_SPEC_CORRECT.
+      }
+
+      intros [x CONTRA].
+      cbn in CONTRA.
+      inv CONTRA.
     - (* Err *)
-      right.
       exists (raise_error err_e).
       exists st'.
       exists ms'.
@@ -4352,17 +4369,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
       forward K_CORRECT.
       { split; auto. }
 
-      destruct K_CORRECT as [[ub_ms [ub_msg K_UB]] | K_CORRECT].
-      { (* UB in K *)
-        left.
-        exists ub_ms. exists ub_msg.
-        right.
-        exists ms'. exists a.
-        split; auto.
-      }
-
-      (* UB not necessarily in K *)
-      right.
       destruct K_CORRECT as [eb [st'' [ms'' [K_EXEC [K_SPEC K_POST]]]]].
 
       cbn in M_EXEC_CORRECT.
@@ -4416,7 +4422,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
   Proof.
     intros MemM Eff ExtraState MM MRun MPROV MSID MMS MERR MUB MOOM RunERR RunUB RunOOM EQM EQRI MLAWS H X pre x.
     intros ms st VALID PRE.
-    right.
     exists (ret x), st, ms.
     split.
     { (* TODO: cleaner lemma *)
@@ -4505,7 +4510,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     intros MemM Eff ExtraState MM MRun MPROV MSID MMS MERR MUB MOOM RunERR RunUB RunOOM EQM EQRI MLAWS MemMonad A msg pre.
     red.
     intros ms st VALID PRE.
-    right.
     exists (raise_oom msg).
     exists st. exists ms.
     split.
@@ -4531,7 +4535,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     intros MemM Eff ExtraState MM MRun MPROV MSID MMS MERR MUB MOOM RunERR RunUB RunOOM EQM EQRI MLAWS MemMonad A msg1 msg2 pre.
     red.
     intros ms st VALID PRE.
-    right.
     exists (raise_error msg2).
     exists st. exists ms.
     split.
@@ -4559,9 +4562,21 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     red.
     intros ms st VALID PRE.
 
-    left.
-    exists ms. exists msg2.
-    cbn; auto.
+    exists (raise_ub msg2).
+    exists st. exists ms.
+    split.
+    { (* TODO: cleaner lemma? *)
+      cbn.
+      red.
+      exists (raise_ub msg1).
+      split; cbn.
+      - eexists; reflexivity.
+      - rewrite MemMonad_run_raise_ub.
+        rewrite rbm_raise_bind; [| typeclasses eauto].
+        reflexivity.
+    }
+
+    split; cbn; auto.
   Qed.
 
   Lemma exec_correct_lift_OOM :
@@ -4623,7 +4638,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     red.
     intros MemM Eff ExtraState MM MRun MPROV MSID MMS MERR MUB MOOM RunERR RunUB RunOOM EQM EQRI MLAWS MemMonad pre
            ms st H PRE.
-    right.
     eapply MemMonad_run_fresh_sid in H as [st' [sid [EUTT [VALID FRESH]]]].
     exists (ret sid), st', ms.
     split; [| split]; auto.
@@ -4810,7 +4824,6 @@ Module Type MemoryExecMonad (LP : LLVMParams) (MP : MemoryParams LP) (MMSP : Mem
     Proof.
       red.
       intros pre ms st H PRE.
-      right.
       eapply MemMonad_run_fresh_provenance in H as [ms' [pr [EUTT [VALID [MEM FRESH]]]]].
       exists (ret pr), st, ms'.
       split; [| split]; auto.

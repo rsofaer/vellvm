@@ -3251,7 +3251,6 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
       destruct (read_byte_raw (mem_state_memory ms) (ptr_to_int ptr)) as [[sbyte aid]|] eqn:READ.
       destruct (access_allowed (address_provenance ptr) aid) eqn:ACCESS.
       - (* Success *)
-        right.
         exists (ret sbyte), st, ms.
         unfold read_byte, read_byte_MemPropT in *.
         split; [| split]; auto.
@@ -3285,7 +3284,6 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
             auto.
         }
       - (* UB from provenance mismatch *)
-        left.
         Ltac solve_read_byte_MemPropT_contra READ ACCESS :=
           solve [repeat eexists; right;
                  repeat eexists; cbn;
@@ -3296,16 +3294,89 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
                  try rewrite ACCESS in *; cbn in *;
                  tauto].
 
-        exists ms. exists (""%string).
-        split; [| solve_returns_provenance].
-        unfold mem_state_memory in *.
-        solve_read_byte_MemPropT_contra READ ACCESS.
+        exists (raise_ub ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string), st, ms.
+        unfold read_byte, read_byte_MemPropT in *.
+        split; [| split]; auto.
+
+        { exists (raise_ub ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string).
+          split.
+          - cbn. exists ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+            rewrite ACCESS.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { unfold lift_memory_MemPropT.
+          split.
+          - right.
+            repeat eexists.
+            cbn.
+            unfold mem_state_memory in READ.
+            rewrite READ.
+            unfold snd.
+            rewrite ACCESS.
+            cbn; auto.
+          - intros ms' x R.
+            inv R.
+        }
       - (* UB from accessing unallocated memory *)
-        left.
-        exists ms. exists (""%string).
-        split; [| solve_returns_provenance].
-        unfold mem_state_memory in *.
-        solve_read_byte_MemPropT_contra READ ACCESS.
+        exists (raise_ub "Reading from unallocated memory."), st, ms.
+        unfold read_byte, read_byte_MemPropT in *.
+        split; [| split]; auto.
+
+        { exists (raise_ub "Reading from unallocated memory.").
+          split.
+          - cbn. exists "Reading from unallocated memory."%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { unfold lift_memory_MemPropT.
+          split.
+          - right.
+            repeat eexists.
+            cbn.
+            unfold mem_state_memory in READ.
+            rewrite READ.
+            unfold snd.
+            cbn; auto.
+          - intros ms' x R.
+            inv R.
+        }
     Qed.
 
     Lemma read_byte_correct :
@@ -3318,7 +3389,6 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
       destruct (read_byte_raw (mem_state_memory ms) (ptr_to_int ptr)) as [[sbyte aid]|] eqn:READ.
       destruct (access_allowed (address_provenance ptr) aid) eqn:ACCESS.
       - (* Success *)
-        right.
         exists (ret sbyte), st, ms.
         unfold read_byte, read_byte_MemPropT in *.
         split; [| split]; auto.
@@ -3349,6 +3419,62 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
             solve_read_byte_prop.
         }
       - (* UB from provenance mismatch *)
+        exists (raise_ub ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string), st, ms.
+        unfold read_byte, read_byte_MemPropT in *.
+        split; [| split]; auto.
+
+        { exists (raise_ub ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string).
+          split.
+          - cbn. exists ("Read from memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         Show.show (show_allocation_id aid) ++
+                         " memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+            rewrite ACCESS.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { cbn.
+          intros byte [CONTRA _].
+          red in CONTRA.
+          destruct CONTRA.
+          unfold read_byte_spec in CONTRA.
+
+          split.
+          - right.
+            repeat eexists.
+            cbn.
+            unfold mem_state_memory in READ.
+            rewrite READ.
+            unfold snd.
+            rewrite ACCESS.
+            cbn; auto.
+          - intros ms' x R.
+            inv R.
+        }
         left.
         unfold read_byte_spec_MemPropT.
         unfold lift_spec_to_MemPropT.
