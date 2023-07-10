@@ -3460,54 +3460,55 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
         { cbn.
           intros byte [CONTRA _].
           red in CONTRA.
-          destruct CONTRA.
-          unfold read_byte_spec in CONTRA.
-
-          split.
-          - right.
-            repeat eexists.
-            cbn.
-            unfold mem_state_memory in READ.
-            rewrite READ.
-            unfold snd.
-            rewrite ACCESS.
-            cbn; auto.
-          - intros ms' x R.
-            inv R.
+          destruct CONTRA as [aid' [ALLOC ACCESS']].
+          pose proof read_byte_raw_byte_allocated_aid_eq _ _ _ _ _ _ READ ALLOC eq_refl; subst.
+          rewrite ACCESS in ACCESS'.
+          discriminate.
         }
-        left.
-        unfold read_byte_spec_MemPropT.
-        unfold lift_spec_to_MemPropT.
-        exists ms. exists (""%string).
-        cbn.
-        intros byte.
-        unfold mem_state_memory in *.
-        intros READ'.
-        destruct READ'.
-        break_access_hyps.
-
-        break_byte_allocated_in ALLOC.
-        rewrite READ in ALLOC.
-        cbn in ALLOC.
-        destruct ALLOC as [_ AIDEQ].
-        symmetry in AIDEQ.
-        apply proj_sumbool_true in AIDEQ; subst.
-        rewrite ACCESS in ALLOWED.
-        inv ALLOWED.
       - (* UB from accessing unallocated memory *)
-        left.
-        exists ms. exists (""%string).
-        cbn.
-        intros byte CONTRA.
-        unfold mem_state_memory in *.
-        destruct CONTRA.
-        break_access_hyps.
+        intros PRE.
+        exists (raise_ub "Reading from unallocated memory."), st, ms.
 
-        break_byte_allocated_in ALLOC.
-        rewrite READ in ALLOC.
-        cbn in ALLOC.
-        destruct ALLOC as [_ AIDEQ].
-        inv AIDEQ.
+        unfold read_byte, read_byte_MemPropT in *.
+        split; [| split]; auto.
+
+        { exists (raise_ub "Reading from unallocated memory."%string).
+          split.
+          - cbn. exists "Reading from unallocated memory."%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { cbn.
+          intros byte [CONTRA _].
+          red in CONTRA.
+          destruct CONTRA as [aid' [ALLOC ACCESS']].
+          repeat red in ALLOC.
+          destruct ALLOC as (?&?&ALLOC&ASSERT).
+          repeat red in ALLOC.
+          destruct ALLOC as (ALLOC&?).
+          repeat red in ALLOC.
+          destruct ALLOC as (?&?&MEM&ALLOC).
+          cbn in MEM.
+          destruct MEM; subst.
+          destruct ms.
+          cbn in ALLOC.
+          destruct ms_memory_stack0.
+          cbn in *.
+          rewrite READ in ALLOC.
+          destruct ALLOC as (?&?).
+          subst.
+          destruct ASSERT.
+          discriminate.
+        }
     Qed.
 
     Lemma write_byte_correct :
