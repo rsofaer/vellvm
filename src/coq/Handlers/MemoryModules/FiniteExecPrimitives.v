@@ -3515,13 +3515,12 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
       forall ptr byte pre, exec_correct pre (write_byte ptr byte) (write_byte_spec_MemPropT ptr byte).
     Proof.
       unfold exec_correct.
-      intros ptr byte pre ms st VALID.
+      intros ptr byte pre ms st VALID PRE.
 
       (* Need to destruct ahead of time so we know if UB happens *)
       destruct (read_byte_raw (mem_state_memory ms) (ptr_to_int ptr)) as [[sbyte aid]|] eqn:READ.
       destruct (access_allowed (address_provenance ptr) aid) eqn:ACCESS.
       - (* Success *)
-        right.
         exists (ret tt).
         exists st.
         exists {|
@@ -3565,39 +3564,102 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
          *)
         admit.
       - (* UB from provenance mismatch *)
-        left.
         unfold write_byte_spec_MemPropT.
         unfold lift_spec_to_MemPropT.
-        exists ms. exists (""%string).
-        cbn.
-        intros m2.
-        unfold mem_state_memory in *.
-        intros WRITE'.
-        destruct WRITE'.
-        break_access_hyps.
+        unfold write_byte.
 
-        break_byte_allocated_in ALLOC.
-        rewrite READ in ALLOC.
-        cbn in ALLOC.
-        destruct ALLOC as [_ AIDEQ].
-        symmetry in AIDEQ.
-        apply proj_sumbool_true in AIDEQ; subst.
-        rewrite ACCESS in ALLOWED.
-        inv ALLOWED.
+        exists (raise_ub ("Trying to write to memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         (show_allocation_id aid) ++
+                         " Memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string).
+        exists st. exists ms.
+        
+
+        split; [| split]; auto.
+
+        { exists (raise_ub ("Trying to write to memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         (show_allocation_id aid) ++
+                         " Memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string).
+          split.
+          - cbn. exists ("Trying to write to memory with invalid provenance -- addr: " ++
+                         Show.show (ptr_to_int ptr) ++
+                         ", addr prov: " ++
+                         show_prov (address_provenance ptr) ++
+                         ", memory allocation id: " ++
+                         (show_allocation_id aid) ++
+                         " Memory: " ++ Show.show (map (fun '(key, (_, aid1)) => (key, show_allocation_id aid1)) (IM.elements (elt:=mem_byte) (mem_state_memory ms))))%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+            rewrite ACCESS.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { cbn.
+          intros m2 [WRITE_SUCCESS BYTE_WRITTEN WRITE_BYTE_INVARIANTS].
+          repeat red in WRITE_SUCCESS.
+          destruct WRITE_SUCCESS as [aid' [ALLOC ACCESS']].
+          pose proof read_byte_raw_byte_allocated_aid_eq _ _ _ _ _ _ READ ALLOC eq_refl; subst.
+          rewrite ACCESS in ACCESS'.
+          discriminate.
+        }
       - (* UB from accessing unallocated memory *)
-        left.
-        exists ms. exists (""%string).
-        cbn.
-        intros m2 CONTRA.
-        unfold mem_state_memory in *.
-        destruct CONTRA.
-        break_access_hyps.
+        exists (raise_ub "Writing to unallocated memory").
+        exists st. exists ms.
 
-        break_byte_allocated_in ALLOC.
-        rewrite READ in ALLOC.
-        cbn in ALLOC.
-        destruct ALLOC as [_ AIDEQ].
-        inv AIDEQ.
+        unfold write_byte, write_byte_spec_MemPropT in *.
+        split; [| split]; auto.
+
+        { exists (raise_ub "Writing to unallocated memory"%string).
+          split.
+          - cbn. exists "Writing to unallocated memory"%string. reflexivity.
+          - cbn.
+            rewrite MemMonad_run_bind.
+            rewrite MemMonad_get_mem_state.
+            rewrite bind_ret_l.
+
+            rewrite READ.
+
+            rewrite rbm_raise_bind; [|typeclasses eauto].
+            rewrite MemMonad_run_raise_ub.
+            reflexivity.
+        }
+
+        { cbn.
+          intros m2 [WRITE_SUCCESS BYTE_WRITTEN WRITE_BYTE_INVARIANTS].
+          repeat red in WRITE_SUCCESS.
+          destruct WRITE_SUCCESS as [aid' [ALLOC ACCESS']].
+          repeat red in ALLOC.
+          destruct ALLOC as (?&?&ALLOC&ASSERT).
+          repeat red in ALLOC.
+          destruct ALLOC as (ALLOC&?).
+          repeat red in ALLOC.
+          destruct ALLOC as (?&?&MEM&ALLOC).
+          cbn in MEM.
+          destruct MEM; subst.
+          destruct ms.
+          cbn in ALLOC.
+          destruct ms_memory_stack0.
+          cbn in *.
+          rewrite READ in ALLOC.
+          destruct ALLOC as (?&?).
+          subst.
+          destruct ASSERT.
+          discriminate.
+        }
     Admitted.
 
     (* TODO: move this? *)
@@ -3724,9 +3786,8 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
         exec_correct pre (get_free_block len pr) (find_free_block len pr).
     Proof.
       unfold exec_correct.
-      intros len pr pre ms st VALID.
+      intros len pr pre ms st VALID PRE.
       cbn.
-      right.
 
       unfold get_free_block.
       unfold find_free_block.
