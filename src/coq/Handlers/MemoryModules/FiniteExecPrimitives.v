@@ -3899,9 +3899,9 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
           pose proof exec_correct_get_consecutive_pointers.
           pose proof (exec_correct_get_consecutive_pointers len a).
 
-          unfold exec_correct in H1.
+          unfold exec_correct in H0, H1.
 
-          specialize (H1 len
+          specialize (H0 len
                          a
                          pre {|
               ms_memory_stack :=
@@ -3909,25 +3909,9 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
                   memory_stack_memory := mem; memory_stack_frame_stack := fs; memory_stack_heap := heap
                 |};
               ms_provenance := pr'
-                        |} st VALID H0).
-          destruct H1.
-          { (* UB case, should be dischargeable *)
-            destruct H1 as [ms_ub [ubmsg CONTRA]].
-            exfalso.
+                         |} st VALID PRE).
 
-            assert (@raise_ub err_ub_oom _ _ ubmsg ∈
-                      @get_consecutive_ptrs
-                      (MemPropT MemState) (@MemPropT_Monad MemState)
-                         (@MemPropT_RAISE_OOM MemState) (@MemPropT_RAISE_ERROR MemState)
-                         a len) as CONTRA'.
-            { do 2 eexists.
-              eapply CONTRA.
-            }
-
-            eapply get_consecutive_ptrs_no_ub in CONTRA'; eauto.
-          }
-
-          destruct H1 as [e_gep [st_gep [ms_gep [GEP_EXEC [GEP_SPEC GEP_POST]]]]].
+          destruct H0 as [e_gep [st_gep [ms_gep [GEP_EXEC [GEP_SPEC GEP_POST]]]]].
 
           cbn in GEP_EXEC.
           red in GEP_EXEC.
@@ -4990,63 +4974,115 @@ Module FiniteMemoryModelExecPrimitives (LP : LLVMParams) (MP : MemoryParams LP) 
 
       (* Need to destruct ahead of time so we know if UB happens *)
       pose proof (dtyp_eq_dec dt DTYPE_Void) as [VOID | NVOID].
-      { (* UB because void type allocated to stack *)
-        left.
+      { subst.
+        (* This existential is for the *final* result *)
+        exists (raise_ub ""%string).
+        exists st. exists ms.
+
+        split; [| split]; auto.
+        { unfold add_block_to_stack, add_block.
+          cbn.
+          red.
+          cbn.
+          repeat setoid_rewrite MemMonad_run_bind.
+          repeat setoid_rewrite bind_bind.
+
+          setoid_rewrite MemMonad_get_mem_state.
+          setoid_rewrite bind_ret_l.
+          destruct ms, ms_memory_stack0.
+          cbn in *.
+
+          destruct PRE; subst.
+          setoid_rewrite MemMonad_put_mem_state.
+          setoid_rewrite bind_ret_l.
+          cbn.
+
+          eexists.
+          split.
+
+          { eexists; reflexivity.
+          }
+
+          unfold add_ptrs_to_frame.
+          rewrite MemMonad_run_bind.
+          cbn.
+          unfold modify_mem_state.
+          setoid_rewrite bind_bind.
+          setoid_rewrite MemMonad_run_bind.
+          setoid_rewrite bind_bind.
+          setoid_rewrite MemMonad_get_mem_state.
+          setoid_rewrite bind_ret_l.
+          cbn.
+          setoid_rewrite MemMonad_run_bind.
+          setoid_rewrite MemMonad_put_mem_state.
+          repeat (setoid_rewrite MemMonad_run_ret; setoid_rewrite bind_ret_l).
+          repeat setoid_rewrite bind_ret_l.
+          setoid_rewrite MemMonad_run_ret.
+          repeat setoid_rewrite bind_ret_l.
+          setoid_rewrite MemMonad_run_ret.
+          repeat setoid_rewrite bind_ret_l.
+          setoid_rewrite MemMonad_run_ret.
+          reflexivity.
+          
+          admit.
+        }
+
         cbn.
-        exists ms_init.
-        exists ""%string.
         tauto.
       }
 
-      (* No UB because type allocated isn't void *)
-      right.
-      unfold add_block_to_stack, add_block, add_ptrs_to_frame.
+      { (* UB because void type allocated to stack *)
+        unfold add_block_to_stack, add_block, add_ptrs_to_frame.
 
-      destruct ms.
-      destruct ms_memory_stack0.
+        destruct ms.
+        destruct ms_memory_stack0.
 
-      exists (ret ptr).
-      eexists.
-      eexists.
-      split.
-      { exists (ret ptr).
-        cbn.
-        split; [reflexivity|].
-        repeat rewrite MemMonad_run_bind.
-        repeat rewrite bind_bind.
+        exists (ret ptr).
+        eexists.
+        eexists.
+        split.
+        { exists (ret ptr).
+          cbn.
+          split; [reflexivity|].
+          repeat rewrite MemMonad_run_bind.
+          repeat rewrite bind_bind.
 
-        rewrite MemMonad_get_mem_state.
-        rewrite bind_ret_l.
-        cbn.
+          rewrite MemMonad_get_mem_state.
+          rewrite bind_ret_l.
+          cbn.
 
-        rewrite MemMonad_put_mem_state.
-        rewrite bind_ret_l.
+          rewrite MemMonad_put_mem_state.
+          rewrite bind_ret_l.
 
-        unfold modify_mem_state.
-        repeat rewrite MemMonad_run_bind.
-        repeat rewrite bind_bind.
+          unfold modify_mem_state.
+          repeat rewrite MemMonad_run_bind.
+          repeat rewrite bind_bind.
 
-        rewrite MemMonad_get_mem_state.
-        rewrite bind_ret_l.
-        repeat rewrite MemMonad_run_bind.
-        repeat rewrite bind_bind.
+          rewrite MemMonad_get_mem_state.
+          rewrite bind_ret_l.
+          repeat rewrite MemMonad_run_bind.
+          repeat rewrite bind_bind.
 
-        rewrite MemMonad_put_mem_state.
-        repeat (first [rewrite MemMonad_run_ret; rewrite bind_ret_l]).
-        rewrite bind_ret_l.
-        repeat (first [rewrite MemMonad_run_ret; rewrite bind_ret_l]).
-        cbn.
-        reflexivity.
+          rewrite MemMonad_put_mem_state.
+          repeat (first [rewrite MemMonad_run_ret; rewrite bind_ret_l]).
+          rewrite bind_ret_l.
+          repeat (first [rewrite MemMonad_run_ret; rewrite bind_ret_l]).
+          cbn.
+          reflexivity.
+        }
+
+        split.
+        { cbn.
+          eexists. exists (ptr, ptrs).
+          split; auto.
+          split; auto.
+          eapply find_free_allocate_bytes_post_conditions; eauto.          
+        }
+
+        intros [x RETx].
+        inv RETx.
+        - admit. (* MemMonad_valid_state *)
       }
-
-      split.
-      - eexists. exists (ptr, ptrs).
-        split; auto.
-        split; auto.
-        (* TODO: solve_allocate_bytes_post_conditions *)
-        eapply find_free_allocate_bytes_post_conditions; eauto.
-        cbn. tauto.
-      - admit. (* MemMonad_valid_state *)
     Admitted.
 
     (* TODO: move *)
