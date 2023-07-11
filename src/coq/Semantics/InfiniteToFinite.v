@@ -21247,7 +21247,24 @@ intros addr_fin addr_inf ms_fin ms_inf byte_inf byte_fin MSR ADDR_CONV BYTE_REF 
                     destruct EV_REL as (?&?&?); subst.
 
                     { assert (LLVMParamsBigIntptr.Events.DV.uvalue_has_dtyp v0 t) as TYPE.
-                      { (* TODO: Will need a well-typed predicate to prove this *)
+                      { (* TODO: Will need a well-typed predicate to prove this
+
+                           May just be able to make store do this
+                           check dynamically and raise UB
+                           instead. Will have to update some of those
+                           proofs, but that should be fine.
+
+                           May also be possible to update the
+                           serialize_sbytes_fin_inf proof to get rid
+                           of the uvalue_has_dtyp (so we no longer
+                           need it for handle_store_fin_inf as well).
+
+                           This second option is probably a little bit
+                           better if it's not too painful, because we
+                           won't have to change the definition of
+                           store. May run into trouble with NO_VOID /
+                           ALL_IX_SUPPORTED?
+                         *)
                         admit.
                       }
 
@@ -22980,7 +22997,27 @@ intros addr_fin addr_inf ms_fin ms_inf byte_inf byte_fin MSR ADDR_CONV BYTE_REF 
             destruct EV_REL as (?&?&?); subst.
 
             { assert (LLVMParamsBigIntptr.Events.DV.uvalue_has_dtyp v t0) as TYPE.
-              { (* TODO: Will need a well-typed predicate to prove this *)
+              { (* TODO: Will need a well-typed predicate to prove this
+
+                           May just be able to make store do this
+                           check dynamically and raise UB
+                           instead. Will have to update some of those
+                           proofs, but that should be fine.
+
+                           May also be possible to update the
+                           serialize_sbytes_fin_inf proof to get rid
+                           of the uvalue_has_dtyp (so we no longer
+                           need it for handle_store_fin_inf as well).
+
+                           This second option is probably a little bit
+                           better if it's not too painful, because we
+                           won't have to change the definition of
+                           store. This second option is probably a little bit
+                           better if it's not too painful, because we
+                           won't have to change the definition of
+                           store. May run into trouble with NO_VOID /
+                           ALL_IX_SUPPORTED?
+                 *)
                 admit.
               }
 
