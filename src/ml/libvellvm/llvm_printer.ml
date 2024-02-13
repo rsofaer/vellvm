@@ -360,7 +360,7 @@ and exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
              exp v
              typ t2
 
-  | OP_GetElementPtr (t, tv, tvl) ->
+  | OP_GetElementPtr (t, tv, tvl, _) ->
     fprintf ppf "getelementptr (%a, %a, %a)"
              typ t
              texp tv
@@ -459,7 +459,7 @@ and inst_exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
              exp v
              typ t2
 
-  | OP_GetElementPtr (t, tv, tvl) ->
+  | OP_GetElementPtr (t, tv, tvl, _) ->
     fprintf ppf "getelementptr %a, %a, %a"
              typ t
              texp tv

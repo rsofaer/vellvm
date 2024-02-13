@@ -259,7 +259,7 @@ Section REGISTER_OPERATIONS.
                       | EXP_Vector l
                         => set_flat_map (fun x => f (snd x)) l
 
-                      | OP_GetElementPtr _ (_,e) l
+                      | OP_GetElementPtr _ (_,e) l ib
                         => f e +++ set_flat_map (fun x => f (snd x)) l
                       end
       |}.

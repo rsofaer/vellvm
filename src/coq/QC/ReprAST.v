@@ -228,7 +228,7 @@ Section ReprInstances.
     | OP_FBinop fop fm t v1 v2 => S (exp_measure v1 + exp_measure v2)
     | OP_FCmp cmp t v1 v2 => S (exp_measure v1 + exp_measure v2)
     | OP_Conversion conv t_from v t_to => S (exp_measure v)
-    | OP_GetElementPtr t ptrval idxs => S (exp_measure (snd ptrval) + list_sum (map (fun et => exp_measure (snd et)) idxs))
+    | OP_GetElementPtr t ptrval idxs ib => S (exp_measure (snd ptrval) + list_sum (map (fun et => exp_measure (snd et)) idxs))
     | OP_ExtractElement vec idx => S (exp_measure (snd vec) + exp_measure (snd idx))
     | OP_InsertElement vec elt idx => S (exp_measure (snd vec) + exp_measure (snd elt) + exp_measure (snd idx))
     | OP_ShuffleVector vec1 vec2 idxmask => S (exp_measure (snd vec1) + exp_measure (snd vec2) + exp_measure (snd idxmask))
@@ -272,7 +272,7 @@ Section ReprInstances.
       "(OP_IBinop " ++ repr iop ++ " " ++ repr t ++ " " ++ repr_exp v1 ++ " " ++ repr_exp v2 ++ ")"
     | OP_ICmp cmp t v1 v2 =>
       "(OP_ICmp " ++ repr cmp ++ " " ++ repr t ++ " " ++ repr_exp v1 ++ " " ++ repr_exp v2 ++ ")"
-    | OP_GetElementPtr t ptrval idxs =>
+    | OP_GetElementPtr t ptrval idxs ib =>
       "(OP_GetElementPtr " ++ repr t ++
                            "(" ++ repr (fst ptrval) ++ ", " ++ repr_exp (snd ptrval) ++ ") [" ++ contents_In idxs (fun '(t, e) Hin => "(" ++ repr t ++ ", " ++ repr_exp e ++ ")") ++ "])"
     | OP_Select (tc, cnd) (t1, v1) (t2, v2) =>

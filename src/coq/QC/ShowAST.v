@@ -124,7 +124,7 @@ Section ShowInstances.
         show iop ++ " " ++ show t ++ " " ++ show_exp v1 ++ ", " ++ show_exp v2
       | OP_ICmp cmp t v1 v2 =>
         "icmp " ++ show cmp ++ " " ++ show t ++ " " ++ show_exp v1 ++ ", " ++ show_exp v2
-      | OP_GetElementPtr t ptrval idxs =>
+      | OP_GetElementPtr t ptrval idxs ib =>
         "todo: getelementptr"
       | OP_Select (tc, cnd) (t1, v1) (t2, v2) =>
         "select " ++ show tc ++ " " ++ show_exp cnd ++ ", " ++ show t1 ++ " " ++ show_exp v1  ++ ", " ++ show t2 ++ " " ++ show_exp v2

@@ -748,8 +748,8 @@ Section ExpPure.
   | no_conv_ICmp : forall b T x x', no_conv x -> no_conv x' -> no_conv (OP_ICmp b T x x')
   | no_conv_FBinop : forall b l T x x', no_conv x -> no_conv x' -> no_conv (OP_FBinop b l T x x')
   | no_conv_FCmp : forall f T x x', no_conv x -> no_conv x' -> no_conv (OP_FCmp f T x x')
-  | no_conv_GetElementPtr : forall T t x l, no_conv x -> (forall t' x', In (t', x') l -> no_conv x') ->
-                                       no_conv (OP_GetElementPtr T (t, x) l)
+  | no_conv_GetElementPtr : forall T t x l b, no_conv x -> (forall t' x', In (t', x') l -> no_conv x') ->
+                                       no_conv (OP_GetElementPtr T (t, x) l b)
   | no_conv_ExtractElement : forall t x t' x', no_conv x -> no_conv x' ->
                                             no_conv (OP_ExtractElement (t, x) (t', x'))
   | no_conv_InsertElement : forall t x t' x' t'' x'', no_conv x -> no_conv x' -> no_conv x'' ->

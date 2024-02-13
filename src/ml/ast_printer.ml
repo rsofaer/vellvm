@@ -283,7 +283,7 @@ and exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
         exp v
         typ t2
 
-  | OP_GetElementPtr (t, tv, tvl) ->
+  | OP_GetElementPtr (t, tv, tvl, _) ->
      fprintf ppf "(OP_GetElementPtr %a %a [%a])"
        typ t
        (pp_print_prod typ exp) tv
@@ -381,7 +381,7 @@ and inst_exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
       exp v
       typ t2
 
-  | OP_GetElementPtr (t, tv, tvl) ->
+  | OP_GetElementPtr (t, tv, tvl, _) ->
     fprintf ppf "(OP_GetElementPtr %a %a [%a])"
       typ t
       (pp_print_prod typ exp) tv

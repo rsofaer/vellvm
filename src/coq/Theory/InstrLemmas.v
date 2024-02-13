@@ -285,7 +285,7 @@ Proof.
 Qed.
 
 Lemma denote_instr_gep_array :
-  forall i size τ e_ix ix ptr a val g l l' l'' m,
+  forall i size τ e_ix ix ptr a val g l l' l'' m ib,
     ⟦ ptr at DTYPE_Pointer ⟧e3 g l m ≈ Ret3 g l' m (UVALUE_Addr a)
     ->
     ⟦ e_ix at DTYPE_I 64 ⟧e3 g l' m ≈ Ret3 g l'' m (UVALUE_I64 (repr (Z.of_nat ix)))
@@ -294,7 +294,7 @@ Lemma denote_instr_gep_array :
     ->
     exists ptr_res,
       read m ptr_res τ = inr val /\
-      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)])) ⟧i3 g l m
+      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
       ≈
       Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
@@ -320,7 +320,7 @@ Proof.
 Qed.
 
 Lemma denote_instr_gep_array' :
-  forall i size τ e_ix ix ptr a val g l l' l'' m,
+  forall i size τ e_ix ix ptr a val g l l' l'' m ib,
     ⟦ ptr at DTYPE_Pointer ⟧e3 g l m ≈ Ret3 g l' m (UVALUE_Addr a)
     ->
     ⟦ e_ix at DTYPE_I 64 ⟧e3 g l' m ≈ Ret3 g l'' m (UVALUE_I64 (repr (Z.of_nat ix)))
@@ -330,7 +330,7 @@ Lemma denote_instr_gep_array' :
     exists ptr_res,
       read m ptr_res τ = inr val /\
       handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] = inr ptr_res /\
-      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)])) ⟧i3 g l m
+      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
       ≈
       Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
@@ -357,14 +357,14 @@ Proof.
 Qed.
 
 Lemma denote_instr_gep_array_no_read_addr :
-  forall i size τ e_ix ix ptr a g l l' l'' m ptr_res,
+  forall i size τ e_ix ix ptr a g l l' l'' m ptr_res ib,
     ⟦ ptr at DTYPE_Pointer ⟧e3 g l m ≈ Ret3 g l' m (UVALUE_Addr a)
     ->
     ⟦ e_ix at DTYPE_I 64 ⟧e3 g l' m ≈ Ret3 g l'' m (UVALUE_I64 (repr (Z.of_nat ix)))
     ->
     dtyp_fits m a (DTYPE_Array size τ) ->
     handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat ix))] = inr ptr_res ->
-    ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)])) ⟧i3 g l m
+    ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
     ≈
     Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
@@ -385,7 +385,7 @@ Proof.
 Qed.
 
 Lemma denote_instr_gep_array_no_read :
-  forall i size τ e_ix ix ptr a g l l' l'' m,
+  forall i size τ e_ix ix ptr a g l l' l'' m ib,
     ⟦ ptr at DTYPE_Pointer ⟧e3 g l m ≈ Ret3 g l' m (UVALUE_Addr a)
     ->
     ⟦ e_ix at DTYPE_I 64 ⟧e3 g l' m ≈ Ret3 g l'' m (UVALUE_I64 (repr (Z.of_nat ix)))
@@ -393,7 +393,7 @@ Lemma denote_instr_gep_array_no_read :
     dtyp_fits m a (DTYPE_Array size τ) ->
     exists ptr_res,
       handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] = inr ptr_res /\
-      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)])) ⟧i3 g l m
+      ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
       ≈
       Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.

@@ -956,8 +956,11 @@ instr_op:
   | c=conversion t1=typ v=exp KW_TO t2=typ
     { OP_Conversion (c, t1, v t1, t2) }
 
-  | KW_GETELEMENTPTR KW_INBOUNDS? t=typ COMMA ptr=texp idx=preceded(COMMA, texp)*
-    { OP_GetElementPtr (t, ptr, idx) }
+  | KW_GETELEMENTPTR t=typ COMMA ptr=texp idx=preceded(COMMA, texp)*
+    { OP_GetElementPtr (t, ptr, idx, false) }
+  
+  | KW_GETELEMENTPTR KW_INBOUNDS t=typ COMMA ptr=texp idx=preceded(COMMA, texp)*
+    { OP_GetElementPtr (t, ptr, idx, true) }
 
   | KW_SELECT if_=texp COMMA then_=texp COMMA else_= texp
     { OP_Select (if_, then_, else_) }
@@ -999,8 +1002,11 @@ expr_op:
   | c=conversion LPAREN t1=typ v=exp KW_TO t2=typ RPAREN
     { OP_Conversion (c, t1, v t1, t2) }
 
-  | KW_GETELEMENTPTR KW_INBOUNDS? LPAREN t=typ COMMA ptr=texp idx=preceded(COMMA, texp)* RPAREN
-    { OP_GetElementPtr (t, ptr, idx) }
+  | KW_GETELEMENTPTR KW_INBOUNDS LPAREN t=typ COMMA ptr=texp idx=preceded(COMMA, texp)* RPAREN
+    { OP_GetElementPtr (t, ptr, idx, true) }
+
+  | KW_GETELEMENTPTR LPAREN t=typ COMMA ptr=texp idx=preceded(COMMA, texp)* RPAREN
+    { OP_GetElementPtr (t, ptr, idx, false) }
 
   | KW_SELECT LPAREN if_=texp COMMA then_=texp COMMA else_= texp RPAREN
     { OP_Select (if_, then_, else_) }

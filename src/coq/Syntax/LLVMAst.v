@@ -282,7 +282,7 @@ Inductive exp : Set :=
 | OP_FBinop           (fop:fbinop) (fm:list fast_math) (t:T) (v1:exp) (v2:exp)
 | OP_FCmp             (cmp:fcmp)   (t:T) (v1:exp) (v2:exp)
 | OP_Conversion       (conv:conversion_type) (t_from:T) (v:exp) (t_to:T)
-| OP_GetElementPtr    (t:T) (ptrval:(T * exp)) (idxs:list (T * exp))
+| OP_GetElementPtr    (t:T) (ptrval:(T * exp)) (idxs:list (T * exp)) (inbounds:bool)
 | OP_ExtractElement   (vec:(T * exp)) (idx:(T * exp))
 | OP_InsertElement    (vec:(T * exp)) (elt:(T * exp)) (idx:(T * exp))
 | OP_ShuffleVector    (vec1:(T * exp)) (vec2:(T * exp)) (idxmask:(T * exp))

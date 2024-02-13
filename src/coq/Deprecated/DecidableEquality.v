@@ -638,8 +638,8 @@ Proof.
        end).
     { subst.
       refine
-        (match decide ((OP_GetElementPtr t0 (ptr_t', ptr_v') indices) =
-                       (OP_GetElementPtr t0 (ptr_t', ptr_v') idxs)) with
+        (match decide ((OP_GetElementPtr t0 (ptr_t', ptr_v') indices ib) =
+                       (OP_GetElementPtr t0 (ptr_t', ptr_v') idxs ib)) with
          | left rest_eq => left _
          | right rest_neq => right _
          end).

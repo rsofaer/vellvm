@@ -572,7 +572,7 @@ Module Denotation(A:MemoryAddress.ADDRESS)(LLVMEvents:LLVM_INTERACTIONS(A)).
            essentially, go away?
 
          *)
-        | OP_GetElementPtr dt1 (dt2, ptrval) idxs =>
+        | OP_GetElementPtr dt1 (dt2, ptrval) idxs ib =>
           vptr <- denote_exp (Some dt2) ptrval ;;
           vs <- map_monad (fun '(dt, index) => denote_exp (Some dt) index) idxs ;;
 

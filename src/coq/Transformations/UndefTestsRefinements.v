@@ -386,10 +386,10 @@ Inductive is_read_exp {T} : exp T -> ident -> Prop :=
 | is_read_Conversion : forall conv t_f v t_t id, is_read_exp v id -> is_read_exp (OP_Conversion conv t_f v t_t) id
 | is_read_GetElementPtr_ptr: forall (t:T) (ptrval:(T * exp T)) (idxs:list (T * exp T)) id,
     is_read_exp (snd ptrval) id ->
-    is_read_exp (OP_GetElementPtr t ptrval idxs) id
+    is_read_exp (OP_GetElementPtr t ptrval idxs ib) id
 | is_read_GetElementPtr_idx: forall (t:T) t' e (ptrval:(T * exp T)) (idxs:list (T * exp T)) id,
     In (t', e) idxs -> is_read_exp e id ->
-    is_read_exp (OP_GetElementPtr t ptrval idxs) id
+    is_read_exp (OP_GetElementPtr t ptrval idxs ib) id
 
 | is_read_ExtractElement_vec: forall (vec:(T * exp T)) (idx:(T * exp T)) id,
     is_read_exp (snd vec) id ->

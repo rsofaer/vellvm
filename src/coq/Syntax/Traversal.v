@@ -122,9 +122,9 @@ Section Endo.
           OP_FCmp (endo cmp) (endo t) (f_exp v1) (f_exp v2)
         | OP_Conversion conv t_from v t_to =>
           OP_Conversion conv (endo t_from) (f_exp v) (endo t_to)
-        | OP_GetElementPtr t ptrval idxs =>
+        | OP_GetElementPtr t ptrval idxs ib =>
           OP_GetElementPtr (endo t) (endo (fst ptrval), f_exp (snd ptrval))
-                           (List.map (fun '(a,b) => (endo a, f_exp b)) idxs)
+                           (List.map (fun '(a,b) => (endo a, f_exp b)) idxs) ib
         | OP_ExtractElement vec idx =>
           OP_ExtractElement (endo (fst vec), f_exp (snd vec))
                             (endo (fst idx), f_exp (snd idx))
@@ -469,7 +469,7 @@ Section TFunctor.
         | OP_FBinop fop fm t v1 v2           => OP_FBinop (endo fop) fm (f t) (f_exp v1) (f_exp v2)
         | OP_FCmp cmp t v1 v2                => OP_FCmp (endo cmp) (f t) (f_exp v1) (f_exp v2)
         | OP_Conversion conv t_from v t_to   => OP_Conversion conv (f t_from) (f_exp v) (f t_to)
-        | OP_GetElementPtr t ptr idxs        => OP_GetElementPtr (f t) (ftexp ptr) (tfmap ftexp idxs)
+        | OP_GetElementPtr t ptr idxs ib     => OP_GetElementPtr (f t) (ftexp ptr) (tfmap ftexp idxs) ib
         | OP_ExtractElement vec idx          => OP_ExtractElement (ftexp vec) (ftexp idx)
         | OP_InsertElement vec elt idx       => OP_InsertElement (ftexp vec) (ftexp elt) (ftexp idx)
         | OP_ShuffleVector vec1 vec2 idxmask => OP_ShuffleVector (ftexp vec1) (ftexp vec2) (ftexp  idxmask)
