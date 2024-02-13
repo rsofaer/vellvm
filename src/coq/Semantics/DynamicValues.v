@@ -1454,16 +1454,11 @@ Class VInt I : Type :=
     in
     let ret_local := (@ret undef_or_err (Monad_eitherT string Monad_err) uvalue)
     in
-    match v1, v2 with
-    | UVALUE_Poison, _ => ret_local UVALUE_Poison
-    | _, UVALUE_Poison => ret_local UVALUE_Poison
-    | _, _ =>
       match cnd with
       | DVALUE_I1 i =>
         ret_local (if (Int1.unsigned i =? 1)%Z then v1 else v2)
       | DVALUE_Poison => ret_local UVALUE_Poison
       | _ => failwith_local "ill_typed select"
-      end
     end.
 
   Definition eval_select cnd v1 v2 : undef_or_err uvalue :=
