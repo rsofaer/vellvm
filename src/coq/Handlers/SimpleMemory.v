@@ -43,7 +43,7 @@ Definition mem_step {X} (e:IO X) (m:memory) : (IO X) + (list dvalue * X) :=
         end,
         ())
 
-  | GEP t a vs => inl (GEP t a vs) (* TODO: GEP semantics *)
+  | GEP t a vs ib => inl (GEP t a vs ib) (* TODO: GEP semantics *)
 
   | ItoP t i => inl (ItoP t i) (* TODO: ItoP semantics *)
 

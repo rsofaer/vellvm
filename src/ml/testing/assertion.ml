@@ -65,7 +65,7 @@ let rec eq_uvalue (l: DV.uvalue) (r: DV.uvalue) : bool =
      bl = br && eq_uvalue l1 r1 && eq_uvalue l2 r2
   | UVALUE_Conversion (t, l, tl), UVALUE_Conversion (t', r, tr) ->
      t = t' && eq_uvalue l r && tl = tr
-  | UVALUE_GetElementPtr (ctl, l', ls), UVALUE_GetElementPtr(ctr, r', rs) ->
+  | UVALUE_GetElementPtr (ctl, l', ls, lib), UVALUE_GetElementPtr(ctr, r', rs, rib) ->
      ctl = ctr && eq_uvalue l' r' && List.for_all2 eq_uvalue ls rs
   | UVALUE_ExtractElement (a,b), UVALUE_ExtractElement (c,d) ->
      eq_uvalue a c && eq_uvalue b d

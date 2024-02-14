@@ -582,12 +582,12 @@ Module Denotation(A:MemoryAddress.ADDRESS)(LLVMEvents:LLVM_INTERACTIONS(A)).
           in
 
           match maybe_dvs with
-          | inr (dvptr, dvs) => fmap dvalue_to_uvalue (trigger (GEP dt1 dvptr dvs))
+          | inr (dvptr, dvs) => fmap dvalue_to_uvalue (trigger (GEP dt1 dvptr dvs ib))
           | inl _ =>
             (* Pick to get dvalues *)
             dvptr <- concretize_or_pick vptr True ;;
             dvs <- map_monad (fun v => concretize_or_pick v True) vs ;;
-            fmap dvalue_to_uvalue (trigger (GEP dt1 dvptr dvs))
+            fmap dvalue_to_uvalue (trigger (GEP dt1 dvptr dvs ib))
           end
 
         | OP_ExtractElement vecop idx =>

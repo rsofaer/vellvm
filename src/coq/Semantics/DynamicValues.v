@@ -256,7 +256,7 @@ Inductive uvalue : Set :=
 | UVALUE_FBinop           (fop:fbinop) (fm:list fast_math) (v1:uvalue) (v2:uvalue)
 | UVALUE_FCmp             (cmp:fcmp)   (v1:uvalue) (v2:uvalue)
 | UVALUE_Conversion       (conv:conversion_type) (v:uvalue) (t_to:dtyp)
-| UVALUE_GetElementPtr    (t:dtyp) (ptrval:uvalue) (idxs:list (uvalue)) (* TODO: do we ever need this? GEP raises an event? *)
+| UVALUE_GetElementPtr    (t:dtyp) (ptrval:uvalue) (idxs:list (uvalue)) (inbounds: bool) (* TODO: do we ever need this? GEP raises an event? *)
 | UVALUE_ExtractElement   (vec: uvalue) (idx: uvalue)
 | UVALUE_InsertElement    (vec: uvalue) (elt:uvalue) (idx:uvalue)
 | UVALUE_ShuffleVector    (vec1:uvalue) (vec2:uvalue) (idxmask:uvalue)
@@ -287,7 +287,7 @@ Section UvalueInd.
   Hypothesis IH_FBinop         : forall (fop:fbinop) (fm:list fast_math) (v1:uvalue) (v2:uvalue), P v1 -> P v2 -> P (UVALUE_FBinop fop fm v1 v2).
   Hypothesis IH_FCmp           : forall (cmp:fcmp)   (v1:uvalue) (v2:uvalue), P v1 -> P v2 -> P (UVALUE_FCmp cmp v1 v2).
   Hypothesis IH_Conversion     : forall (conv:conversion_type) (v:uvalue) (t_to:dtyp), P v -> P (UVALUE_Conversion conv v t_to).
-  Hypothesis IH_GetElementPtr  : forall (t:dtyp) (ptrval:uvalue) (idxs:list (uvalue)), P ptrval -> (forall idx, In idx idxs -> P idx) -> P (UVALUE_GetElementPtr t ptrval idxs).
+  Hypothesis IH_GetElementPtr  : forall (t:dtyp) (ptrval:uvalue) (idxs:list (uvalue)) (ib:bool), P ptrval -> (forall idx, In idx idxs -> P idx) -> P (UVALUE_GetElementPtr t ptrval idxs ib).
   Hypothesis IH_ExtractElement : forall (vec: uvalue) (idx: uvalue), P vec -> P idx -> P (UVALUE_ExtractElement vec idx).
   Hypothesis IH_InsertElement  : forall (vec: uvalue) (elt:uvalue) (idx:uvalue), P vec -> P elt -> P idx -> P (UVALUE_InsertElement vec elt idx).
   Hypothesis IH_ShuffleVector  : forall (vec1:uvalue) (vec2:uvalue) (idxmask:uvalue), P vec1 -> P vec2 -> P idxmask -> P (UVALUE_ShuffleVector vec1 vec2 idxmask).
@@ -753,7 +753,7 @@ Section DecidableEquality.
               | UVALUE_FBinop op fm uv1 uv2, UVALUE_FBinop op' fm' uv1' uv2' => _
               | UVALUE_FCmp op uv1 uv2, UVALUE_FCmp op' uv1' uv2' => _
               | UVALUE_Conversion ct u t, UVALUE_Conversion ct' u' t' => _
-              | UVALUE_GetElementPtr t u l, UVALUE_GetElementPtr t' u' l' => _
+              | UVALUE_GetElementPtr t u l ib, UVALUE_GetElementPtr t' u' l' ib' => _
               | UVALUE_ExtractElement u v, UVALUE_ExtractElement u' v' => _
               | UVALUE_InsertElement u v t, UVALUE_InsertElement u' v' t' => _
               | UVALUE_ShuffleVector u v t, UVALUE_ShuffleVector u' v' t' => _
@@ -793,6 +793,7 @@ Section DecidableEquality.
     - destruct (dtyp_eq_dec t t')...
       destruct (f u u')...
       destruct (lsteq_dec l l')...
+      destruct (bool_dec ib ib')...
     - destruct (f u u')...
       destruct (f v v')...
     - destruct (f u u')...
@@ -1691,8 +1692,8 @@ Class VInt I : Type :=
         uvalue_has_dtyp (UVALUE_Conversion Sext value (DTYPE_Vector n (DTYPE_I to_sz))) (DTYPE_Vector n (DTYPE_I to_sz))
 
   | UVALUE_GetElementPtr_typ :
-      forall dt uv idxs,
-        uvalue_has_dtyp (UVALUE_GetElementPtr dt uv idxs) DTYPE_Pointer
+      forall dt uv idxs ib,
+        uvalue_has_dtyp (UVALUE_GetElementPtr dt uv idxs ib) DTYPE_Pointer
   | UVALUE_ExtractElement_typ :
       forall n vect idx t sz,
         IX_supported sz ->

@@ -300,7 +300,7 @@ Lemma denote_instr_gep_array :
 Proof.
   intros * PTR IX GET.
 
-  pose proof interp_cfg3_GEP_array τ a size g l'' m val ix GET as (ptr_res & EQ & READ).
+  pose proof interp_cfg3_GEP_array τ a size g l'' m val ix  ib GET as (ptr_res & EQ & READ).
   exists ptr_res. split; auto.
 
   cbn.
@@ -329,14 +329,14 @@ Lemma denote_instr_gep_array' :
     ->
     exists ptr_res,
       read m ptr_res τ = inr val /\
-      handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] = inr ptr_res /\
+      handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] ib = inr ptr_res /\
       ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
       ≈
       Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
   intros * PTR IX GET.
 
-  pose proof interp_cfg3_GEP_array' τ a size g l'' m val ix GET as (ptr_res & EQ & GEP & READ).
+  pose proof interp_cfg3_GEP_array' τ a size g l'' m val ix ib GET as (ptr_res & EQ & GEP & READ).
   exists ptr_res.
   split; auto.
   split; auto.
@@ -363,13 +363,13 @@ Lemma denote_instr_gep_array_no_read_addr :
     ⟦ e_ix at DTYPE_I 64 ⟧e3 g l' m ≈ Ret3 g l'' m (UVALUE_I64 (repr (Z.of_nat ix)))
     ->
     dtyp_fits m a (DTYPE_Array size τ) ->
-    handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat ix))] = inr ptr_res ->
+    handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat ix))] ib = inr ptr_res ->
     ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
     ≈
     Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
   intros * PTR IX FITS HGEP.
-  pose proof @interp_cfg3_GEP_array_no_read_addr τ a size g l'' m ix ptr_res FITS.
+  pose proof @interp_cfg3_GEP_array_no_read_addr τ a size g l'' m ix ib ptr_res FITS.
 
   cbn.
   go.
@@ -392,14 +392,14 @@ Lemma denote_instr_gep_array_no_read :
     ->
     dtyp_fits m a (DTYPE_Array size τ) ->
     exists ptr_res,
-      handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] = inr ptr_res /\
+      handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat ix))] ib = inr ptr_res /\
       ⟦ (IId i, INSTR_Op (OP_GetElementPtr (DTYPE_Array size τ) (DTYPE_Pointer, ptr) [(DTYPE_I 64, EXP_Integer 0%Z); (DTYPE_I 64, e_ix)] ib)) ⟧i3 g l m
       ≈
       Ret3 g (Maps.add i (UVALUE_Addr ptr_res) l'') m tt.
 Proof.
   intros * PTR IX FITS.
 
-  pose proof interp_cfg3_GEP_array_no_read τ a size g l'' m ix FITS as (ptr_res & EQ & GEP).
+  pose proof interp_cfg3_GEP_array_no_read τ a size g l'' m ix ib FITS as (ptr_res & EQ & GEP).
   exists ptr_res.
   split; auto.
 

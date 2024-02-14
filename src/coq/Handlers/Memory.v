@@ -531,7 +531,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
       The offset is therefore incremented by this index times the size of the type of elements stored. Finally, a recursive call
       at this new offset allows for deeper unbundling of a nested structure.
      *)
-    Fixpoint handle_gep_h (t:dtyp) (off:Z) (vs:list dvalue): err Z :=
+    Fixpoint handle_gep_h (t:dtyp) (off:Z) (vs:list dvalue) (inbounds: bool): err Z :=
       match vs with
       | v :: vs' =>
         match v with
@@ -541,7 +541,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
           match t with
           | DTYPE_Vector _ ta
           | DTYPE_Array _ ta =>
-            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs'
+            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs' inbounds
           | DTYPE_Struct ts
           | DTYPE_Packed_struct ts => (* Handle these differently in future *)
             let offset := fold_left (fun acc t => (acc + (Z.of_N (sizeof_dtyp t))))%Z
@@ -549,7 +549,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
             match nth_error ts n with
             | None => failwith "overflow"
             | Some t' =>
-              handle_gep_h t' (off + offset) vs'
+              handle_gep_h t' (off + offset) vs' inbounds
             end
           | _ => failwith ("non-i32-indexable type")
           end
@@ -559,7 +559,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
           match t with
           | DTYPE_Vector _ ta
           | DTYPE_Array _ ta =>
-            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs'
+            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs' inbounds
           | _ => failwith ("non-i8-indexable type")
           end
         | DVALUE_I64 i =>
@@ -568,7 +568,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
           match t with
           | DTYPE_Vector _ ta
           | DTYPE_Array _ ta =>
-            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs'
+            handle_gep_h ta (off + k * (Z.of_N (sizeof_dtyp ta))) vs' inbounds
           | _ => failwith ("non-i64-indexable type")
           end
         | _ => failwith "non-I32 index"
@@ -579,21 +579,21 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
     (* At the toplevel, GEP takes a [dvalue] as an argument that must contain a pointer, but no other pointer can be recursively followed.
      The pointer set the block into which we look, and the initial offset. The first index value add to the initial offset passed to [handle_gep_h] for the actual access to structured data.
      *)
-    Definition handle_gep_addr (t:dtyp) (a:addr) (vs:list dvalue) : err addr :=
+    Definition handle_gep_addr (t:dtyp) (a:addr) (vs:list dvalue) (inbounds:bool) : err addr :=
       let '(b, o) := a in
       match vs with
       | DVALUE_I32 i :: vs' => (* TODO: Handle non i32 / i64 indices *)
-        off <- handle_gep_h t (o + Z.of_N (sizeof_dtyp t) * (unsigned i)) vs' ;;
+        off <- handle_gep_h t (o + Z.of_N (sizeof_dtyp t) * (unsigned i)) vs' inbounds ;;
         ret (b, off)
       | DVALUE_I64 i :: vs' =>
-        off <- handle_gep_h t (o + Z.of_N (sizeof_dtyp t) * (unsigned i)) vs' ;;
+        off <- handle_gep_h t (o + Z.of_N (sizeof_dtyp t) * (unsigned i)) vs' inbounds ;;
         ret (b, off)
       | _ => failwith "non-I32 index"
       end.
 
-    Definition handle_gep (t:dtyp) (dv:dvalue) (vs:list dvalue) : err dvalue :=
+    Definition handle_gep (t:dtyp) (dv:dvalue) (vs:list dvalue) (inbounds: bool): err dvalue :=
       match dv with
-      | DVALUE_Addr a => fmap DVALUE_Addr (handle_gep_addr t a vs)
+      | DVALUE_Addr a => fmap DVALUE_Addr (handle_gep_addr t a vs inbounds)
       | _ => failwith "non-address"
       end.
 
@@ -643,7 +643,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
     Definition get_array_cell_mem_block (bk : mem_block) (bk_offset : Z) (i : nat) (size : N) (t : dtyp) : err uvalue :=
       'offset <- handle_gep_h (DTYPE_Array size t)
                              bk_offset
-                             [DVALUE_I64 (DynamicValues.Int64.repr (Z.of_nat i))];;
+                             [DVALUE_I64 (DynamicValues.Int64.repr (Z.of_nat i))] false;;
       inr (read_in_mem_block bk offset t).
 
     (** ** Array element writing
@@ -656,7 +656,7 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
     Definition write_array_cell_mem_block (bk : mem_block) (bk_offset : Z) (i : nat) (size : N) (t : dtyp) (v : dvalue) : err mem_block :=
       'offset <- handle_gep_h (DTYPE_Array size t)
                              bk_offset
-                             [DVALUE_I64 (DynamicValues.Int64.repr (Z.of_nat i))];;
+                             [DVALUE_I64 (DynamicValues.Int64.repr (Z.of_nat i))] false;;
       inr (write_to_mem_block bk offset v).
 
     (** ** Array lookups -- mem_block
@@ -1134,8 +1134,8 @@ Module Make(LLVMEvents: LLVM_INTERACTIONS(Addr)).
         | _ => raise ("Attempting to store to a non-address dvalue: " ++ (to_string dv))
         end
 
-      | GEP t dv vs =>
-        'dv' <- lift_pure_err (handle_gep t dv vs);;
+      | GEP t dv vs ib =>
+        'dv' <- lift_pure_err (handle_gep t dv vs ib);;
         ret (m, dv')
 
       | ItoP x =>

@@ -146,12 +146,12 @@ Module Type LLVM_INTERACTIONS (ADDR : MemoryAddress.ADDRESS).
   Variant MemoryE : Type -> Type :=
   | MemPush : MemoryE unit
   | MemPop  : MemoryE unit
-  | Alloca  : forall (t:dtyp),                               (MemoryE dvalue)
-  | Load    : forall (t:dtyp)   (a:dvalue),                  (MemoryE uvalue)
-  | Store   : forall (a:dvalue) (v:dvalue),                  (MemoryE unit)
-  | GEP     : forall (t:dtyp)   (v:dvalue) (vs:list dvalue), (MemoryE dvalue)
-  | ItoP    : forall (i:dvalue),                             (MemoryE dvalue)
-  | PtoI    : forall (t:dtyp) (a:dvalue),                    (MemoryE dvalue)
+  | Alloca  : forall (t:dtyp),                                         (MemoryE dvalue)
+  | Load    : forall (t:dtyp)   (a:dvalue),                            (MemoryE uvalue)
+  | Store   : forall (a:dvalue) (v:dvalue),                            (MemoryE unit)
+  | GEP     : forall (t:dtyp)   (v:dvalue) (vs:list dvalue) (ib:bool), (MemoryE dvalue)
+  | ItoP    : forall (i:dvalue),                                       (MemoryE dvalue)
+  | PtoI    : forall (t:dtyp) (a:dvalue),                              (MemoryE dvalue)
   .
 
   (* An event resolving the non-determinism induced by undef. The argument _P_

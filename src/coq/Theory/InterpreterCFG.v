@@ -314,19 +314,19 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma interp_cfg3_GEP_array' : forall t a size g l m val i,
+Lemma interp_cfg3_GEP_array' : forall t a size g l m val i ib,
     get_array_cell m a i t = inr val ->
     exists ptr,
       ℑ3 (trigger (GEP
                      (DTYPE_Array size t)
                      (DVALUE_Addr a)
-                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))])) g l m
+                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))] ib)) g l m
          ≈ Ret3 g l m (DVALUE_Addr ptr) /\
-      handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr ptr /\
+      handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr ptr /\
       read m ptr t = inr val.
 Proof.
   intros * GET.
-  epose proof @interp_memory_GEP_array' _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ _ GET as [ptr [INTERP READ]].
+  epose proof @interp_memory_GEP_array' _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ _ _ GET as [ptr [INTERP READ]].
   exists ptr.
   split; auto.
 
@@ -337,17 +337,17 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma interp_cfg3_GEP_array_no_read_addr : forall t a size g l m i ptr,
+Lemma interp_cfg3_GEP_array_no_read_addr : forall t a size g l m i ib ptr,
     dtyp_fits m a (DTYPE_Array size t) ->
-    handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr ptr ->
+    handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr ptr ->
     ℑ3 (trigger (GEP
                    (DTYPE_Array size t)
                    (DVALUE_Addr a)
-                   [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))])) g l m
+                   [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))] ib)) g l m
        ≈ Ret3 g l m (DVALUE_Addr ptr).
 Proof.
   intros * FITS GEP.
-  epose proof @interp_memory_GEP_array_no_read_addr _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ ptr FITS as EQ.
+  epose proof @interp_memory_GEP_array_no_read_addr _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ ptr _ FITS as EQ.
   unfold ℑ3.
   go.
   rewrite EQ; eauto.
@@ -355,18 +355,18 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma interp_cfg3_GEP_array_no_read : forall t a size g l m i,
+Lemma interp_cfg3_GEP_array_no_read : forall t a size g l m i ib,
     dtyp_fits m a (DTYPE_Array size t) ->
     exists ptr,
       ℑ3 (trigger (GEP
                      (DTYPE_Array size t)
                      (DVALUE_Addr a)
-                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))])) g l m
+                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))] ib)) g l m
          ≈ Ret3 g l m (DVALUE_Addr ptr) /\
-      handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr ptr.
+      handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr ptr.
 Proof.
   intros * FITS.
-  epose proof @interp_memory_GEP_array_no_read _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ FITS as [ptr [INTERP GEP]]. 
+  epose proof @interp_memory_GEP_array_no_read _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ _ FITS as [ptr [INTERP GEP]]. 
   exists ptr.
   split; auto.
 
@@ -378,18 +378,18 @@ Proof.
   auto.
 Qed.
 
-Lemma interp_cfg3_GEP_array : forall t a size g l m val i,
+Lemma interp_cfg3_GEP_array : forall t a size g l m val i ib,
     get_array_cell m a i t = inr val ->
     exists ptr,
       ℑ3 (trigger (GEP
                      (DTYPE_Array size t)
                      (DVALUE_Addr a)
-                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))])) g l m
+                     [DVALUE_I64 (Integers.Int64.repr 0); DVALUE_I64 (Integers.Int64.repr (Z.of_nat i))] ib)) g l m
          ≈ Ret3 g l m (DVALUE_Addr ptr) /\
       read m ptr t = inr val.
 Proof.
   intros * GET.
-  epose proof @interp_memory_GEP_array _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ _ GET as [ptr [INTERP READ]].
+  epose proof @interp_memory_GEP_array _ (PickE +' UBE +' DebugE +' FailureE) _ _ _ t _ size _ _ _ _ GET as [ptr [INTERP READ]].
   exists ptr.
   split; auto.
 

@@ -1071,14 +1071,14 @@ Section Memory_Stack_Theory.
   Qed.
 
   Lemma gep_array_ptr_overlap_dtyp :
-    forall ptr ix (sz : N) τ elem_ptr,
+    forall ptr ix (sz : N) τ ib elem_ptr,
       DynamicValues.Int64.unsigned ix < Z.of_N sz -> (* Not super happy about this *)
       (0 < sizeof_dtyp τ)%N ->
       handle_gep_addr (DTYPE_Array sz τ) ptr
-                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] = inr elem_ptr ->
+                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] ib = inr elem_ptr ->
       ~(no_overlap_dtyp elem_ptr τ ptr (DTYPE_Array sz τ)).
   Proof.
-    intros ptr ix sz τ elem_ptr BOUNDS SIZE GEP.
+    intros ptr ix sz τ ib elem_ptr BOUNDS SIZE GEP.
     intros NO_OVER.
     unfold no_overlap_dtyp, no_overlap in NO_OVER.
 
@@ -2385,12 +2385,12 @@ Section Memory_Stack_Theory.
       auto.
     Qed.
 
-    Lemma read_array: forall m size τ i a elem_addr,
+    Lemma read_array: forall m size τ i a ib elem_addr,
         allocated a m ->
-        handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr elem_addr ->
+        handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr elem_addr ->
         read m elem_addr τ = get_array_cell m a i τ.
     Proof.
-      intros m size τ i a elem_addr ALLOC GEP.
+      intros m size τ i a ib elem_addr ALLOC GEP.
       unfold get_array_cell.
       destruct a.
       unfold read.
@@ -2482,12 +2482,12 @@ Section Memory_Stack_Theory.
       auto.
     Qed.
 
-    Lemma read_array_exists : forall m size τ i a,
+    Lemma read_array_exists : forall m size τ i a ib,
         allocated a m ->
         exists elem_addr,
-          handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr elem_addr /\ read m elem_addr τ = get_array_cell m a i τ.
+          handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr elem_addr /\ read m elem_addr τ = get_array_cell m a i τ.
     Proof.
-      intros m size τ i a ALLOC.
+      intros m size τ i a ib ALLOC.
       destruct a.
       exists (z,
               z0 + Z.of_N size * Z.of_N (sizeof_dtyp τ) * DynamicValues.Int64.unsigned (DynamicValues.Int64.repr 0) +
@@ -2507,14 +2507,15 @@ Section Memory_Stack_Theory.
       - eapply read_array; cbn; eauto.
         rewrite N2Z.inj_mul.
         reflexivity.
+        Unshelve. auto.
     Qed.
 
-    Lemma write_array_lemma : forall m size τ i a elem_addr v,
+    Lemma write_array_lemma : forall m size τ i a ib elem_addr v,
         allocated a m ->
-        handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr elem_addr ->
+        handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr elem_addr ->
         write m elem_addr v = write_array_cell m a i τ v.
     Proof.
-      intros m size τ i a elem_addr v ALLOC GEP.
+      intros m size τ i a ib elem_addr v ALLOC GEP.
       unfold write_array_cell.
       destruct a.
       unfold write.
@@ -2538,12 +2539,12 @@ Section Memory_Stack_Theory.
         inversion GETSOME.
     Qed.
 
-    Lemma write_array_exists : forall m size τ i a v,
+    Lemma write_array_exists : forall m size τ i a v ib,
         allocated a m ->
         exists elem_addr,
-          handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr elem_addr /\ write m elem_addr v = write_array_cell m a i τ v.
+          handle_gep_addr (DTYPE_Array size τ) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr elem_addr /\ write m elem_addr v = write_array_cell m a i τ v.
     Proof.
-      intros m size τ i a v ALLOC.
+      intros m size τ i a v ib ALLOC.
       destruct a.
       exists (z,
               z0 + Z.of_N (size * sizeof_dtyp τ) * DynamicValues.Int64.unsigned (DynamicValues.Int64.repr 0) +
@@ -2558,6 +2559,7 @@ Section Memory_Stack_Theory.
         reflexivity.
         unfold Int64.max_unsigned. cbn. lia.
       - eapply write_array_lemma; cbn; eauto.
+      Unshelve. auto.
     Qed.
 
     Lemma write_preserves_allocated :
@@ -2755,13 +2757,13 @@ Section Memory_Stack_Theory.
     Qed.
 
     Lemma handle_gep_addr_allocated :
-      forall idxs sz τ ptr m elem_addr,
+      forall idxs sz τ ptr m ib elem_addr,
         allocated ptr m ->
-        handle_gep_addr (DTYPE_Array sz τ) ptr idxs = inr elem_addr ->
+        handle_gep_addr (DTYPE_Array sz τ) ptr idxs ib = inr elem_addr ->
         allocated elem_addr m.
     Proof.
       induction idxs;
-        intros sz τ [b i] m [eb ei] ALLOC GEP.
+        intros sz τ [b i] m ib [eb ei] ALLOC GEP.
       - discriminate GEP.
       - cbn in *. destruct a; inversion GEP.
         + destruct (handle_gep_h (DTYPE_Array sz τ) (i + Z.of_N (sz * sizeof_dtyp τ) * DynamicValues.Int32.unsigned x) idxs); inversion GEP; subst.
@@ -2845,13 +2847,13 @@ Section Memory_Stack_Theory.
     Qed.
 
     Lemma no_overlap_dtyp_array_different_indices:
-      forall ix i ptrll elem_addr1 elem_addr2 sz τ,
-        handle_gep_addr (DTYPE_Array sz τ) ptrll [DVALUE_I64 (repr 0); DVALUE_I64 ix] = inr elem_addr1 ->
+      forall ix i ptrll elem_addr1 elem_addr2 sz τ ib ,
+        handle_gep_addr (DTYPE_Array sz τ) ptrll [DVALUE_I64 (repr 0); DVALUE_I64 ix] ib = inr elem_addr1 ->
         Int64.unsigned i <> Int64.unsigned ix ->
-        handle_gep_addr (DTYPE_Array sz τ) ptrll [DVALUE_I64 (repr 0); DVALUE_I64 i] = inr elem_addr2 ->
+        handle_gep_addr (DTYPE_Array sz τ) ptrll [DVALUE_I64 (repr 0); DVALUE_I64 i] ib = inr elem_addr2 ->
         no_overlap_dtyp elem_addr1 τ elem_addr2 τ.
     Proof.
-      intros ix i [ptr_b ptr_o] elem_addr1 elem_addr2 sz τ GEP1 NEQ GEP2.
+      intros ix i [ptr_b ptr_o] elem_addr1 elem_addr2 sz τ ib GEP1 NEQ GEP2.
       unfold handle_gep_addr in *.
       cbn in *; inv GEP1; inv GEP2.
       unfold no_overlap_dtyp. red.
@@ -3184,19 +3186,19 @@ Section PARAMS.
       cbn in *. auto.
     Qed.
 
-    Lemma interp_memory_GEP_array_addr : forall t a (size :N) m val i ptr,
+    Lemma interp_memory_GEP_array_addr : forall t a (size :N) m val i ptr (ib:bool),
         get_array_cell m a i t = inr val ->
-          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] = inr ptr ->
+          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib= inr ptr ->
           interp_memory (trigger (GEP
                                     (DTYPE_Array size t)
                                     (DVALUE_Addr a)
-                                    [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))])) m
+                                    [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib)) m
                         ≈ Ret (m, DVALUE_Addr ptr) /\
           read m ptr t = inr val.
     Proof.
       intros * GET. intros.
       pose proof get_array_succeeds_allocated _ _ _ _ GET as ALLOC.
-      pose proof @read_array m size t i a ptr ALLOC as RARRAY.
+      pose proof @read_array m size t i a ib ptr ALLOC as RARRAY.
       split.
       - rewrite interp_memory_trigger. cbn.
         cbn in RARRAY. destruct RARRAY. auto.
@@ -3206,20 +3208,20 @@ Section PARAMS.
         auto.
     Qed.
 
-    Lemma interp_memory_GEP_array' : forall t a size m val i,
+    Lemma interp_memory_GEP_array' : forall t a size m val i ib,
         get_array_cell m a i t = inr val ->
         exists ptr,
           interp_memory (trigger (GEP
                                     (DTYPE_Array size t)
                                     (DVALUE_Addr a)
-                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))])) m
+                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib)) m
                         ≈ Ret (m, DVALUE_Addr ptr) /\
-          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr ptr /\
+          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr ptr /\
           read m ptr t = inr val.
     Proof.
-      intros t a size m val i GET.
+      intros t a size m val i ib GET.
       pose proof get_array_succeeds_allocated _ _ _ _ GET as ALLOC.
-      pose proof read_array_exists m size t i a ALLOC as RARRAY.
+      pose proof read_array_exists m size t i a ib ALLOC as RARRAY.
       destruct RARRAY as (ptr & GEP & READ).
       exists ptr.
       split.
@@ -3232,33 +3234,33 @@ Section PARAMS.
       - rewrite <- GET. auto.
     Qed.
 
-    Lemma interp_memory_GEP_array : forall t a size m val i,
+    Lemma interp_memory_GEP_array : forall t a size m val i ib,
         get_array_cell m a i t = inr val ->
         exists ptr,
           interp_memory (trigger (GEP
                                     (DTYPE_Array size t)
                                     (DVALUE_Addr a)
-                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))])) m
+                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib)) m
                         ≈ Ret (m,DVALUE_Addr ptr) /\
           read m ptr t = inr val.
     Proof.
-      intros t a size m val i GET.
-      epose proof (@interp_memory_GEP_array' t a size m val i GET) as [ptr GEP].
+      intros t a size m val i ib GET.
+      epose proof (@interp_memory_GEP_array' t a size m val i ib GET) as [ptr GEP].
       exists ptr. intuition.
     Qed.
 
-    Lemma interp_memory_GEP_array_no_read_addr : forall t a size m i ptr,
+    Lemma interp_memory_GEP_array_no_read_addr : forall t a size m i ptr ib,
       dtyp_fits m a (DTYPE_Array size t) ->
-        handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] = inr ptr ->
+        handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib = inr ptr ->
         interp_memory (trigger (GEP
                                   (DTYPE_Array size t)
                                   (DVALUE_Addr a)
-                                  [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))])) m
+                                  [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib)) m
                       ≈ Ret (m, DVALUE_Addr ptr).
     Proof.
       intros * FITS HGEP.
       pose proof (dtyp_fits_allocated FITS) as ALLOC.
-      pose proof @read_array m size t i a ptr ALLOC as RARRAY.
+      pose proof @read_array m size t i a ib ptr ALLOC as RARRAY.
       destruct RARRAY. eauto.
       rewrite interp_memory_trigger. cbn.
       rewrite HGEP. cbn.
@@ -3266,19 +3268,19 @@ Section PARAMS.
       reflexivity.
     Qed.
 
-    Lemma interp_memory_GEP_array_no_read : forall t a size m i,
+    Lemma interp_memory_GEP_array_no_read : forall t a size m i ib,
         dtyp_fits m a (DTYPE_Array size t) ->
         exists ptr,
           interp_memory (trigger (GEP
                                     (DTYPE_Array size t)
                                     (DVALUE_Addr a)
-                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))])) m
+                                    [DVALUE_I64 (Int64.repr 0); DVALUE_I64 (Int64.repr (Z.of_nat i))] ib)) m
                         ≈ Ret (m, DVALUE_Addr ptr) /\
-          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] = inr ptr.
+          handle_gep_addr (DTYPE_Array size t) a [DVALUE_I64 (repr 0); DVALUE_I64 (repr (Z.of_nat i))] ib = inr ptr.
     Proof.
-      intros t a size m i FITS.
+      intros t a size m i ib FITS.
       pose proof (dtyp_fits_allocated FITS) as ALLOC.
-      pose proof read_array_exists m size t i a ALLOC as RARRAY.
+      pose proof read_array_exists m size t i a ib ALLOC as RARRAY.
       destruct RARRAY as (ptr & GEP & READ).
       exists ptr.
       split.
@@ -3633,12 +3635,12 @@ Section PARAMS.
 
   (* TODO: move to appropriate place in this file *)
   Lemma handle_gep_addr_array_same_block :
-    forall ptr ptr_elem ix sz τ,
+    forall ptr ib ptr_elem ix sz τ,
       handle_gep_addr (DTYPE_Array sz τ) ptr
-                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] = inr ptr_elem ->
+                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] ib = inr ptr_elem ->
       fst ptr = fst ptr_elem.
   Proof.
-    intros [ptrb ptro] [ptr_elemb ptr_elemo] ix sz τ GEP.
+    intros [ptrb ptro] ib [ptr_elemb ptr_elemo] ix sz τ GEP.
     cbn in GEP.
     inversion GEP; subst.
     reflexivity.
@@ -3652,12 +3654,12 @@ Section PARAMS.
 
 
   Lemma handle_gep_addr_array_offset :
-    forall ptr ptr_elem ix sz τ,
+    forall ptr ib ptr_elem ix sz τ,
       handle_gep_addr (DTYPE_Array sz τ) ptr
-                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] = inr ptr_elem ->
+                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] ib = inr ptr_elem ->
       snd ptr + DynamicValues.Int64.unsigned ix * Z.of_N (sizeof_dtyp τ) = snd ptr_elem.
   Proof.
-    intros [ptrb ptro] [ptr_elemb ptr_elemo] ix sz τ GEP.
+    intros [ptrb ptro] ib [ptr_elemb ptr_elemo] ix sz τ GEP.
     cbn in GEP.
     inversion GEP; subst.
     cbn.
@@ -3666,14 +3668,14 @@ Section PARAMS.
   Qed.
 
  Lemma dtyp_fits_array_elem :
-    forall m ptr ptr_elem ix (sz : N) τ,
+    forall m ptr ib ptr_elem ix (sz : N) τ,
       dtyp_fits m ptr (DTYPE_Array sz τ) ->
       handle_gep_addr (DTYPE_Array sz τ) ptr
-                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] = inr ptr_elem ->
+                      [DVALUE_I64 (repr 0); DVALUE_I64 ix] ib = inr ptr_elem ->
       Int64.intval ix < Z.of_N sz ->
       dtyp_fits m ptr_elem τ.
   Proof.
-    intros m ptr ptr_elem ix sz τ FITS GEP SZ.
+    intros m ptr ib ptr_elem ix sz τ FITS GEP SZ.
     cbn in GEP.
     unfold dtyp_fits in *.
     destruct FITS as (sz' & bytes & cid & BLOCK & BOUND).
