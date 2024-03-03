@@ -38,6 +38,8 @@ FRONTEND_VOFILES := $(COQFILES_FRONTEND:%=coq/%.vo)
 
 .DEFAULT_GOAL := all
 
+QCTEMPDIR := $(shell cat ./temp_dir)
+
 ######## targets not in this "KNOWNTARGETS" list will be forwarded to CoqMakefile via invoke-coqmakefile
 ######## WARNING - every target of *this* Makefile must be listed here
 KNOWNTARGETS := CoqMakefile invoke-coqmakefile coq extracted $(EXTRACTDIR)/STAMP $(VELLVM_EXE) vellvm vellvmbc test check qc-tests yarpgen-tests rm-qc-test-vo clean extractedclean clean-coqmakefile doc/coq2html documentation $(EXTRACTDIR)/FRONTEND_STAMP $(FRONTEND_EXE) frontend frontend_exe pin-coq opam print-opam print-includes
@@ -114,12 +116,17 @@ yarpgen-tests: rm-qc-test-vo coq
 ######## QuickChick testing targets
 
 .PHONY: qc-tests
-qc-tests: rm-qc-test-vo coq
+qc-tests: rm-qc-test-vo coq 
 	$(COQEXEC) coq/QC/QCShowTesting.v
 
 .PHONY: rm-qc-test-vo
 rm-qc-test-vo:
 	rm -f coq/QC/QCShowTesting.vo
+
+.PHONY: qc-tests-eval
+qc-tests-eval: 
+	echo $(QCTEMPDIR)
+	find $(QCTEMPDIR) -maxdepth 1 -mindepth 1 -type d -exec stat -f '%m %N' {} \; | sort -nr | head -n 1 | awk '{print $2}'
 
 ######## cleaning the project
 
