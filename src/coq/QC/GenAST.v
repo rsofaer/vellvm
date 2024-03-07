@@ -21,7 +21,7 @@ From ExtLib.Structures Require Export
 
 Require Import ExtLib.Data.Monads.StateMonad.
 
-From Vellvm Require Import LLVMAst Utilities AstLib Syntax.CFG Syntax.TypeUtil Syntax.TypToDtyp DynamicTypes Semantics.TopLevel QC.Utils.
+From Vellvm Require Import Syntax.LLVMAst Utilities AstLib Syntax.CFG Syntax.TypeUtil Syntax.TypToDtyp DynamicTypes Semantics.TopLevel QC.Utils.
 Require Import Integers Floats.
 
 Require Import List.
@@ -86,7 +86,7 @@ Section Helpers.
     | OP_FBinop fop fm t v1 v2           => true
     | OP_FCmp cmp t v1 v2                => true
     | OP_Conversion conv t_from v t_to   => true
-    | OP_GetElementPtr t ptrval idxs     => true
+    | OP_GetElementPtr t ptrval idxs nsw => true
     | OP_ExtractElement vec idx          => true
     | OP_InsertElement vec elt idx       => true
     | OP_ShuffleVector vec1 vec2 idxmask => true

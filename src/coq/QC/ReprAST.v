@@ -17,7 +17,7 @@ From ExtLib Require Import
      Structures.Functor
      Eqv.
 
-From Vellvm Require Import LLVMAst Utilities AstLib Syntax.CFG Semantics.TopLevel QC.Utils.
+From Vellvm Require Import Syntax.LLVMAst Utilities AstLib Syntax.CFG Semantics.TopLevel QC.Utils.
 Require Import Integers Floats.
 
 Require Import List.
