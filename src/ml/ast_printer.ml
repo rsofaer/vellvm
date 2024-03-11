@@ -595,6 +595,7 @@ and param_attr : Format.formatter -> LLVMAst.param_attr -> unit =
   | PARAMATTR_Noalias -> pp_print_string ppf "PARAMATTR_Noalias"
   | PARAMATTR_Nocapture -> pp_print_string ppf "PARAMATTR_Nocapture"
   | PARAMATTR_Readonly -> pp_print_string ppf "PARAMATTR_Readonly"
+  | PARAMATTR_Writeonly -> pp_print_string ppf "PARAMATTR_Writeonly"
   | PARAMATTR_Nest -> pp_print_string ppf "PARAMATTR_Nest"
   | PARAMATTR_Returned  -> pp_print_string ppf "PARAMATTR_Returned"
   | PARAMATTR_Nonnull -> pp_print_string ppf "PARAMATTR_Nonnull"

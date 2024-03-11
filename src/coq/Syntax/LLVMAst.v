@@ -69,6 +69,7 @@ Variant param_attr : Set :=
 | PARAMATTR_Noalias
 | PARAMATTR_Nocapture
 | PARAMATTR_Readonly
+| PARAMATTR_Writeonly
 | PARAMATTR_Nest
 | PARAMATTR_Returned
 | PARAMATTR_Nonnull

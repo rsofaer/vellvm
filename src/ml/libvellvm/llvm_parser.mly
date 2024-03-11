@@ -775,6 +775,7 @@ param_attr:
   | KW_NOALIAS                   { PARAMATTR_Noalias           }
   | KW_NOCAPTURE                 { PARAMATTR_Nocapture         }
   | KW_READONLY                  { PARAMATTR_Readonly          }
+  | KW_WRITEONLY                 { PARAMATTR_Writeonly         }
   | KW_NEST                      { PARAMATTR_Nest              }
   | KW_RETURNED                  { PARAMATTR_Returned          }
   | KW_NONNULL                   { PARAMATTR_Nonnull           }

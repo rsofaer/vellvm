@@ -370,6 +370,7 @@ Section ReprInstances.
     | PARAMATTR_Noalias => "PARAMATTR_Noalias"
     | PARAMATTR_Nocapture => "PARAMATTR_Nocapture"
     | PARAMATTR_Readonly => "PARAMATTR_Readonly"
+    | PARAMATTR_Writeonly => "PARAMATTR_Writeonly"
     | PARAMATTR_Nest => "PARAMATTR_Nest"
     | PARAMATTR_Returned => "PARAMATTR_Returned"
     | PARAMATTR_Nonnull => "PARAMATTR_Nonnull"
