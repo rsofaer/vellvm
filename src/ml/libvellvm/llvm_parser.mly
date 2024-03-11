@@ -352,10 +352,13 @@ let is_externally_initialized l =
 %token KW_NOUNDEF 
 %token KW_IMMARG 
 
+%token KW_DSO_LOCAL
+
 
 %token<LLVMAst.raw_id> METADATA_ID
 %token<string> METADATA_STRING
 %token BANGLCURLY
+%token BANGDBG
 %token KW_ATTRIBUTES
 %token<Camlcoq.Z.t> ATTR_GRP_ID
 
@@ -462,6 +465,7 @@ global_attr:
   | KW_EXTERNALLY_INITIALIZED            { OPT_externally_initialized }
   | KW_ALIGN n=INTEGER           	 { OPT_align n                }
   | KW_ADDRSPACE LPAREN n=INTEGER RPAREN { OPT_addrspace n            }
+  | dbg_node                             { OPT_unnamed_addr           }
 
 dll_storage:
   | KW_DLLIMPORT { DLLSTORAGE_Dllimport }
@@ -686,6 +690,7 @@ df_pre_attr:
   | a=visibility                         { OPT_visibility a  }
   | a=dll_storage                        { OPT_dll_storage a }
   | a=cconv                              { OPT_cconv a       }
+  | KW_DSO_LOCAL                         { OPT_unnamed_addr  }
 
 df_post_attr:
   | KW_ADDRSPACE LPAREN n=INTEGER RPAREN { OPT_addrspace n   }
@@ -700,6 +705,7 @@ df_post_attr:
                                          (* TODO: comdat *)
   | a=align                              { OPT_align a       }
   | KW_GC a=STRING                       { OPT_gc a          }
+  | dbg_node                             { OPT_unnamed_addr  }
                                          (* TODO: prefix *)
 external_linkage:
   | KW_EXTERN_WEAK                  { LINKAGE_Extern_weak                  }
@@ -749,7 +755,7 @@ typ:
   | KW_PPC_FP128                                      { TYPE_Ppc_fp128        }
   | KW_METADATA                                       { TYPE_Metadata         }
   | KW_X86_MMX                                        { TYPE_X86_mmx          }
-  | t=typ STAR                                        { TYPE_Pointer t        }
+  | t=typ STAR align?                                 { TYPE_Pointer t        }
   | LSQUARE n=INTEGER KW_X t=typ RSQUARE              { TYPE_Array (n_of_z n, t)  }
   | t=typ LPAREN ts=separated_list(csep, typ) RPAREN  { TYPE_Function (t, ts) }
   | LCURLY ts=separated_list(csep, typ) RCURLY        { TYPE_Struct ts        }
@@ -956,10 +962,10 @@ instr_op:
   | c=conversion t1=typ v=exp KW_TO t2=typ
     { OP_Conversion (c, t1, v t1, t2) }
 
-  | KW_GETELEMENTPTR t=typ COMMA ptr=texp idx=preceded(COMMA, texp)*
+  | KW_GETELEMENTPTR t=typ COMMA ptr=texp idx=preceded(COMMA, texp)* 
     { OP_GetElementPtr (t, ptr, idx, false) }
   
-  | KW_GETELEMENTPTR KW_INBOUNDS t=typ COMMA ptr=texp idx=preceded(COMMA, texp)*
+  | KW_GETELEMENTPTR KW_INBOUNDS t=typ COMMA ptr=texp idx=preceded(COMMA, texp)* 
     { OP_GetElementPtr (t, ptr, idx, true) }
 
   | KW_SELECT if_=texp COMMA then_=texp COMMA else_= texp
@@ -1053,25 +1059,25 @@ exp:
   | ev=expr_val { ev }
   
 %inline instr:
-  | eo=instr_op { INSTR_Op eo }
+  | eo=instr_op preceded(COMMA, dbg_node)? { INSTR_Op eo }
 
   | KW_TAIL? KW_CALL cconv? list(param_attr) f=texp
     a=delimited(LPAREN, separated_list(csep, call_arg), RPAREN)
     list(fn_attr)
     { INSTR_Call (f, a) }
 
-  | KW_ALLOCA t=typ opt=preceded(COMMA, alloca_opt)?
+  | KW_ALLOCA t=typ opt=preceded(COMMA, alloca_opt)? preceded(COMMA, dbg_node)?
     { let (n, a) = match opt with Some x -> x | None -> (None, None) in
       INSTR_Alloca (t, n, a) }
 
-  | KW_LOAD vol=KW_VOLATILE? t=typ COMMA tv=texp a=preceded(COMMA, align)?
+  | KW_LOAD vol=KW_VOLATILE? t=typ COMMA tv=texp a=preceded(COMMA, align)? preceded(COMMA, dbg_node)?
     { INSTR_Load (vol<>None, t, tv, a) }
 
 
   | KW_VAARG  { failwith"INSTR_VAArg"  }
   | KW_LANDINGPAD    { failwith"INSTR_LandingPad"    }
 
-  | KW_STORE vol=KW_VOLATILE? all=texp COMMA ptr=texp a=preceded(COMMA, align)?
+  | KW_STORE vol=KW_VOLATILE? all=texp COMMA ptr=texp a=preceded(COMMA, align)? preceded(COMMA, dbg_node)?
     { INSTR_Store (vol<>None, all, ptr, a) }
 
   | KW_ATOMICCMPXCHG { failwith"INSTR_AtomicCmpXchg" }
@@ -1155,3 +1161,7 @@ test_call:
     a=delimited(LPAREN, separated_list(csep, call_arg), RPAREN)
     list(fn_attr) EOF
     { INSTR_Call (f, a) }
+
+dbg_node:
+  | BANGDBG METADATA_ID {OPT_unnamed_addr}
+  | BANGDBG { OPT_unnamed_addr }

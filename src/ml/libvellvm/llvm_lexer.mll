@@ -147,6 +147,7 @@
   | "volatile"                     -> KW_VOLATILE
   | "immarg"                       -> KW_IMMARG  
   | "noundef"                      -> KW_NOUNDEF
+  | "dso_local"                    -> KW_DSO_LOCAL
 
   (* instrs *)
   | "add"            -> KW_ADD
@@ -318,6 +319,7 @@ rule token = parse
 
   (* FIXME: support metadata strings and struct. Parsed as identifier here. *)
   | "!{" { BANGLCURLY }
+  | "!dbg" { BANGDBG }
   | '!'  { let rid = lexed_id lexbuf in
            begin match rid with 
            | ParseUtil.Named id ->
