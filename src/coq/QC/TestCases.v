@@ -179,7 +179,7 @@ Definition shrunk_program : list (toplevel_entity typ (block typ * list (block t
 
 From ITree Require Import
      ITree
-     Eq.Eq
+     Eq
      TranslateFacts.
 
 From Vellvm Require Import
