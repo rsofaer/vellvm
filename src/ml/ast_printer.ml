@@ -283,11 +283,12 @@ and exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
         exp v
         typ t2
 
-  | OP_GetElementPtr (t, tv, tvl, _) ->
-     fprintf ppf "(OP_GetElementPtr %a %a [%a])"
+  | OP_GetElementPtr (t, tv, tvl, ib) ->
+     fprintf ppf "(OP_GetElementPtr %a %a [%a] %B)"
        typ t
        (pp_print_prod typ exp) tv
        (pp_print_list ~pp_sep:pp_sc_space (pp_print_prod typ exp)) tvl
+       ib
 
   | OP_Select (if_, then_, else_) ->
      fprintf ppf "(OP_Select %a %a %a)"
@@ -381,11 +382,12 @@ and inst_exp : Format.formatter -> (LLVMAst.typ LLVMAst.exp) -> unit =
       exp v
       typ t2
 
-  | OP_GetElementPtr (t, tv, tvl, _) ->
-    fprintf ppf "(OP_GetElementPtr %a %a [%a])"
+  | OP_GetElementPtr (t, tv, tvl, ib) ->
+    fprintf ppf "(OP_GetElementPtr %a %a [%a] %B)"
       typ t
       (pp_print_prod typ exp) tv
       (pp_print_list ~pp_sep:pp_sc_space (pp_print_prod typ exp)) tvl
+      ib
 
   | OP_Select (if_, then_, else_) ->
     fprintf ppf "(OP_Select %a %a %a)"
@@ -486,7 +488,7 @@ and branch_label : Format.formatter -> LLVMAst.raw_id -> unit =
 
 and tint_literal : Format.formatter -> LLVMAst.tint_literal -> unit =
   fun ppf (TInt_Literal(sz, n)) ->
-           fprintf ppf "TInt_Literal (%d)%%Z) (%d)%%Z)" (n_to_int sz) (to_int n)
+           fprintf ppf "((TInt_Literal (%d)%%Z) (%d)%%Z)" (n_to_int sz) (to_int n)
 
 
 and terminator : Format.formatter -> (LLVMAst.typ LLVMAst.terminator) -> unit =
@@ -503,7 +505,7 @@ and terminator : Format.formatter -> (LLVMAst.typ LLVMAst.terminator) -> unit =
   | TERM_Br_1 i          -> fprintf ppf "TERM_Br_1 %a" branch_label i
 
   | TERM_Switch (c, def, cases) ->
-    fprintf ppf "TERM_Switch %a %a %a"
+    fprintf ppf "TERM_Switch %a %a [%a]"
       texp c
       raw_id def
       (pp_print_list ~pp_sep:pp_sc_space (pp_print_prod tint_literal raw_id)) cases
@@ -795,9 +797,11 @@ and declaration : Format.formatter -> (LLVMAst.typ LLVMAst.declaration) -> unit 
     fprintf ppf "dc_type := %a;" typ t;
     pp_force_newline ppf ();
 
-    fprintf ppf "dc_param_attrs := ([%a], [%a]);"
+    (* fprintf ppf "dc_param_attrs := ([%a], [%a]);"
       (pp_print_list ~pp_sep:pp_sc_space param_attr) (fst patt)
-      (pp_print_list (fun ppf l -> fprintf ppf "%a" (pp_print_list ~pp_sep:pp_sc_space param_attr) l)) (snd patt);
+      (pp_print_list (fun ppf l -> fprintf ppf "%a" (pp_print_list ~pp_sep:pp_sc_space param_attr) l)) (snd patt); *)
+    pp_print_string ppf "dc_param_attrs := ([], []);";
+    
     pp_force_newline ppf ();
 
     fprintf ppf "dc_linkage := %a;" (pp_print_option linkage) link;
@@ -848,14 +852,21 @@ and definition : Format.formatter -> (LLVMAst.typ, (LLVMAst.typ LLVMAst.block) *
 
     pp_force_newline ppf ();
 
-    pp_print_string ppf "  df_instrs := [";
+    pp_print_string ppf "  df_instrs := (";
     pp_open_box ppf 0;
     pp_force_newline ppf ();
     block ppf (fst ins); 
+    pp_print_string ppf ",";
+    (* let s_sep = match (snd ins) with 
+      | [] -> ""
+      | _  -> ";"
+      in pp_print_string ppf s_sep; *)
     pp_force_newline ppf ();
+    pp_print_string ppf "[";
     pp_print_list ~pp_sep:(fun ppf () -> pp_print_string ppf ";"; pp_force_newline ppf ())
       block ppf (snd ins) ;
     pp_print_string ppf "]";
+    pp_print_string ppf ")";
     pp_force_newline ppf ();
 
     pp_print_string ppf "|}";
