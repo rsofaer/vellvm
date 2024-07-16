@@ -27,7 +27,6 @@ Require Import Coq.micromega.Lia.
 Local Open Scope Z_scope.
 
 Section Extra_ops.
-
 (** [prec] is the number of bits of the mantissa including the implicit one.
     [emax] is the exponent of the infinities.
     Typically p=24 and emax = 128 in single precision. *)

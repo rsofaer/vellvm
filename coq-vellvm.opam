@@ -1,0 +1,51 @@
+opam-version: "2.0"
+name: "coq-vellvm"
+version: "dev"
+maintainer: "stevez@cis.upenn.edu"
+synopsis: "Coq library implementing (executable) semantics for LLVM IR"
+
+homepage: "https://github.com/vellvm/vellvm"
+dev-repo: "git+https://github.com/vellvm/vellvm.git"
+bug-reports: "https://github.com/vellvm/vellvm/issues"
+authors: [
+  "Steve Zdancewic <stevez@cis.upenn.edu>"
+  "Yannick Zakowski <yannick.zakowski@inria.fr>"
+  "Calvin Beck <hobbes@seas.upenn.edu>"
+  "Irene Yoon <euisuny@cis.upenn.edu>"
+  "Gary (Hanxi) Chen <hanxic@seas.upenn.edu>"
+]
+license: "GPL-3.0-or-later"
+
+
+build: [make "-C" "src" "all" "-j%{jobs}%"]
+install: [make "-C" "src" "install"]
+    
+depends: [
+  "ocaml" {>= "4.14.0"}
+  "cppo" 
+  "dune" 
+  "menhir" 
+  "ocamlbuild"
+  "qcheck" 
+  "coq" {>= "8.13.0" & <= "8.15~"}
+  "coq-ceres" 
+  "coq-paco" 
+  "coq-flocq" {<= "3.4.3"}
+  "coq-mathcomp-ssreflect" 
+  "coq-simple-io"
+  "coq-itree" {>= "5.1.2" & < "5.2~"}
+]
+
+tags: [
+  "date:2023-03-04"
+
+  "category:Computer Science/Programming Languages/Formal Definitions and Theory"
+  "category:Computer Science/Semantics and Compilation/Compilation"
+  "category:Computer Science/Semantics and Compilation/Semantics"  
+
+  "keyword:semantics"
+  "keyword:interpreter"
+  "keyword:LLVM"
+
+  "logpath:Vellvm"
+]

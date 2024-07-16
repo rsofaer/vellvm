@@ -1270,7 +1270,7 @@ Section MonadLaws.
           specialize (REL x).
           red in REL.
           pclearbot.
-          apply eqit_bind_Returns_inv  with (r:=r) in REL; auto.
+          apply eqit_bind_Returns_inv  with (r0:=r) in REL; auto.
           apply eqit_Ret in REL.
           assumption.
   Qed.
