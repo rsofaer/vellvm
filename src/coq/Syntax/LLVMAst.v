@@ -145,16 +145,16 @@ Variant param_attr : Set :=
 | PARAMATTR_Swifterror
 | PARAMATTR_Immarg
 | PARAMATTR_Noundef
-(* | PARAMATTR_Nofpclass (* MISSING: floating point class *) *) 
+(* | PARAMATTR_Nofpclass (* MISSING: floating point class *) *)
 | PARAMATTR_Alignstack (a : int_ast)
 | PARAMATTR_Allocalign
 | PARAMATTR_Allocptr
-| PARAMATTR_Readnone      
-| PARAMATTR_Readonly  
+| PARAMATTR_Readnone
+| PARAMATTR_Readonly
 | PARAMATTR_Writeonly
 | PARAMATTR_Writable
-| PARAMATTR_Dead_on_unwind      
-(* | PARAMATTR_Range (t : typ) a b (* MISSING: range qualifiers *) *)    
+| PARAMATTR_Dead_on_unwind
+(* | PARAMATTR_Range (t : typ) a b (* MISSING: range qualifiers *) *)
 .
 
 Variant frame_pointer_val : Set :=
@@ -491,7 +491,7 @@ Variant annotation : Set :=
   | ANN_no_sanitize_address
   | ANN_no_sanitize_hwaddress
   | ANN_sanitize_address_dyninit
-  | ANN_metadata (l: list metadata)  
+  | ANN_metadata (l: list metadata)
   | ANN_cconv (c:cconv) (* declaration / definitions only *)
   | ANN_gc (s:string) (* declaration / definitions only *)
   | ANN_prefix (t:texp) (* declaration / definitions only *)
@@ -677,6 +677,7 @@ Definition ann_fun_attribute (a:annotation) : option fn_attr :=
 Variant instr : Set :=
 | INSTR_Comment (msg:string)
 | INSTR_Op   (op:exp)                                             (* INVARIANT: op must be of the form (OP_ ...) *)
+| INSTR_Op_Vuln (op: exp)                                         (* Added as annotation of vulnerability *)
 | INSTR_Call (fn:texp) (args:list (texp * (list param_attr))) (anns:list annotation)    (* CORNER CASE: return type is void treated specially *)
 | INSTR_Alloca (t:T) (anns: list annotation)
 | INSTR_Load  (t:T) (ptr:texp) (anns: list annotation)

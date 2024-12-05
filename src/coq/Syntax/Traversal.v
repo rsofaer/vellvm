@@ -195,6 +195,7 @@ Section Endo.
       fun ins =>
         match ins with
         | INSTR_Op op => INSTR_Op (endo op)
+        | INSTR_Op_Vuln op => INSTR_Op (endo op)   (* Placeholder until vuln is supported *)
         | INSTR_Call fn args atts => INSTR_Call (endo fn) (endo args) (endo atts)
         | INSTR_Alloca t atts =>
           INSTR_Alloca (endo t) (endo atts)
@@ -551,6 +552,7 @@ Section TFunctor.
         match ins with
         | INSTR_Comment s => INSTR_Comment s
         | INSTR_Op op => INSTR_Op (tfmap f op)
+        | INSTR_Op_Vuln op => INSTR_Op (tfmap f op) (* Placeholder until vuln supported *)
         | INSTR_Call fn args atts => INSTR_Call  (tfmap f fn)
                                                 (List.map (fun '(te, a) => (tfmap f te, a))  args)
                                                 (tfmap f atts)

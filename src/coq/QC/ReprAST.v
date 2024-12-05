@@ -712,6 +712,7 @@ Section ReprInstances.
     := match i with
        | INSTR_Comment s => "(INSTR_Comment " ++ s ++ ")"
        | INSTR_Op e => "(INSTR_Op " ++ repr e ++ ")"
+       | INSTR_Op_Vuln e => "(INSTR_Op_Vuln " ++ repr e ++ ")"
        | INSTR_Call e params annotations =>
            "(INSTR_Call " ++ repr e ++ " " ++ repr params ++ " " ++ repr annotations ++ ")"
        | INSTR_Alloca t anns =>
@@ -746,10 +747,10 @@ Section ReprInstances.
        |}.
 
   #[global]
-  Instance reprTintLiteral : Repr tint_literal 
-    := {| repr tl := 
-          match tl with 
-            |  TInt_Literal sz x => 
+  Instance reprTintLiteral : Repr tint_literal
+    := {| repr tl :=
+          match tl with
+            |  TInt_Literal sz x =>
                 ("(TInt_Literal " ++ repr sz ++ " " ++ repr x ++ ")")%string
           end
        |}.
@@ -761,13 +762,13 @@ Section ReprInstances.
        | TERM_Br te b1 b2 =>
          "(TERM_Br " ++ repr te ++ " " ++ repr b1 ++ " " ++ repr b2 ++ ")"
        | TERM_Br_1 b => "(TERM_Br_1 " ++ repr b ++ ")"
-       | TERM_Switch v dest brs  => 
+       | TERM_Switch v dest brs  =>
           "(TERM_Switch " ++ repr v ++ " " ++ repr dest ++ repr brs ++ ")"
-      | TERM_IndirectBr v brs  => 
-          "(TERM_IndirectBr " ++ repr v ++ " " ++ repr brs ++ ")" 
+      | TERM_IndirectBr v brs  =>
+          "(TERM_IndirectBr " ++ repr v ++ " " ++ repr brs ++ ")"
       | TERM_Resume v  => "(TERM_Resume " ++ repr v ++ ")"
       | TERM_Invoke fnptrval args to_label unwind_label  =>
-          "(TERM_Invoke " ++ repr fnptrval ++ " " ++ repr args 
+          "(TERM_Invoke " ++ repr fnptrval ++ " " ++ repr args
           ++ " " ++ repr to_label ++ " " ++ repr unwind_label ++ ")"
       | TERM_Unreachable => "TERM_Unreachable"
        end.

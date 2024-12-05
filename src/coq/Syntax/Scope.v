@@ -271,6 +271,7 @@ Section REGISTER_OPERATIONS.
     #[global] Instance instr_use_sites {T} : Use_sites (instr T) :=
       {| use_sites := fun i => match i with
                             | INSTR_Op e => use_sites e
+                            | INSTR_Op_Vuln e => use_sites e  (* Placeholder until vuln supported *)
                             | INSTR_Call e l _ => use_sites (e:texp T) +++
                                                    set_flat_map use_sites (List.map fst l)
                             | INSTR_Load  _ e _
