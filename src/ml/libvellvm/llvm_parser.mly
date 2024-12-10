@@ -352,6 +352,7 @@ let ann_linkage_opt (m : linkage option) : (typ annotation) option =
 %token KW_NUW
 %token KW_NSW
 %token KW_EXACT
+%token KW_VULN
 %token KW_EQ
 %token KW_NE
 %token KW_SGT
@@ -1130,9 +1131,11 @@ ibinop_nuw_nsw_opt: (* may appear with `nuw`/`nsw` keywords *)
 
 ibinop_exact_opt: (* may appear with `exact` keyword *)
   | KW_UDIV { fun exact -> UDiv exact }
-  | KW_SDIV { fun exact -> SDiv exact }
   | KW_LSHR { fun exact -> LShr exact }
   | KW_ASHR { fun exact -> AShr exact }
+
+ibinop_exact_vuln_opt:
+  | KW_SDIV {fun exact vuln -> SDiv (exact, vuln) }
 
 ibinop_no_opt: (* can not appear with any keyword *)
   | KW_UREM { URem }
@@ -1193,6 +1196,7 @@ ibinop:
   | op=ibinop_nuw_nsw_opt KW_NUW KW_NSW { op true true }
   | op=ibinop_nuw_nsw_opt KW_NSW KW_NUW { op true true }
   | op=ibinop_exact_opt exact=KW_EXACT? { op (exact <> None) }
+  | op=ibinop_exact_vuln_opt exact=KW_EXACT? vuln=KW_VULN? { op (exact <> None) (vuln <> None) }
   | op=ibinop_no_opt { op }
 
 fbinop:

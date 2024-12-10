@@ -427,7 +427,7 @@ Section ShowInstances.
            show_op_nuw_nsw "shl" nuw nsw
 
        | UDiv exact  => "udiv" ++ if exact then " exact" else ""
-       | SDiv exact  => "sdiv" ++ if exact then " exact" else ""
+       | SDiv exact  vuln => "sdiv" ++ if exact then " exact" else "" ++ if vuln then " vuln" else ""
        | LShr exact  => "lshr" ++ if exact then " exact" else ""
        | AShr exact  => "ashr" ++ if exact then " exact" else ""
        | URem    => "urem"
@@ -925,10 +925,10 @@ Section ShowInstances.
   #[global] Instance dshowCallArg : DShow (texp T * list param_attr) :=
     { dshow := show_call_arg }.
 
-  Definition dshow_metadata_list (ml : list (metadata T)) := 
+  Definition dshow_metadata_list (ml : list (metadata T)) :=
     concat_DString (string_to_DString " ") (map dshow_metadata ml).
-    
-  
+
+
   Definition dshow_instr (i : instr T) : DString
     := match i with
        | INSTR_Comment s => string_to_DString "; " @@  string_to_DString s
@@ -950,7 +950,7 @@ Section ShowInstances.
              @@
              DList_join (map show_param_attr ret_attrs)
              @@
-             list_to_DString (show_opt_list addrspace) 
+             list_to_DString (show_opt_list addrspace)
 
              @@ string_to_DString " " @@
              dshow_texp fn @@ string_to_DString "(" @@
@@ -1139,7 +1139,7 @@ Section ShowInstances.
     let arg_str := concat_DString (string_to_DString ", ") (map dshow args)
     in
     string_to_DString "(" @@ arg_str @@ vararg_str @@ string_to_DString ")".
-  
+
 End ShowInstances.
 
 (* TODO: REALLY?!? *)

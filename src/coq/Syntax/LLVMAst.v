@@ -145,16 +145,16 @@ Variant param_attr : Set :=
 | PARAMATTR_Swifterror
 | PARAMATTR_Immarg
 | PARAMATTR_Noundef
-(* | PARAMATTR_Nofpclass (* MISSING: floating point class *) *) 
+(* | PARAMATTR_Nofpclass (* MISSING: floating point class *) *)
 | PARAMATTR_Alignstack (a : int_ast)
 | PARAMATTR_Allocalign
 | PARAMATTR_Allocptr
-| PARAMATTR_Readnone      
-| PARAMATTR_Readonly  
+| PARAMATTR_Readnone
+| PARAMATTR_Readonly
 | PARAMATTR_Writeonly
 | PARAMATTR_Writable
-| PARAMATTR_Dead_on_unwind      
-(* | PARAMATTR_Range (t : typ) a b (* MISSING: range qualifiers *) *)    
+| PARAMATTR_Dead_on_unwind
+(* | PARAMATTR_Range (t : typ) a b (* MISSING: range qualifiers *) *)
 .
 
 Variant frame_pointer_val : Set :=
@@ -283,7 +283,7 @@ Variant ibinop : Set :=
 | Mul (nuw:bool) (nsw:bool)
 | Shl (nuw:bool) (nsw:bool)
 | UDiv (exact:bool)
-| SDiv (exact:bool)
+| SDiv (exact:bool) (vuln:bool)
 | LShr (exact:bool)
 | AShr (exact:bool)
 | URem | SRem | And | Or | Xor
@@ -491,7 +491,7 @@ Variant annotation : Set :=
   | ANN_no_sanitize_address
   | ANN_no_sanitize_hwaddress
   | ANN_sanitize_address_dyninit
-  | ANN_metadata (l: list metadata)  
+  | ANN_metadata (l: list metadata)
   | ANN_cconv (c:cconv) (* declaration / definitions only *)
   | ANN_gc (s:string) (* declaration / definitions only *)
   | ANN_prefix (t:texp) (* declaration / definitions only *)

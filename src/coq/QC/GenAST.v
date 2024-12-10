@@ -1664,7 +1664,7 @@ Section ExpGenerators.
            ; ret Mul <*> ret false <*> ret false
            ; ret Shl <*> ret false <*> ret false
            ; ret UDiv <*> ret false
-           ; ret SDiv <*> ret false
+           ; ret SDiv <*> ret false <*> ret false
            ; ret LShr <*> ret false
            ; ret AShr <*> ret false
            ; ret URem

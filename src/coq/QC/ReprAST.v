@@ -143,7 +143,7 @@ Section ReprInstances.
        | Mul a b => "(Mul " ++ repr a ++ " " ++ repr b ++ ")"
        | Shl a b => "(Shl " ++ repr a ++ " " ++ repr b ++ ")"
        | UDiv f  => "(UDiv " ++ repr f ++ ")"
-       | SDiv f  => "(SDiv " ++ repr f ++ ")"
+       | SDiv f  v => "(SDiv " ++ repr f ++ repr v ++ ")"
        | LShr f  => "(LShr " ++ repr f ++ ")"
        | AShr f  => "(AShr " ++ repr f ++ ")"
        | URem    => "URem"
@@ -746,10 +746,10 @@ Section ReprInstances.
        |}.
 
   #[global]
-  Instance reprTintLiteral : Repr tint_literal 
-    := {| repr tl := 
-          match tl with 
-            |  TInt_Literal sz x => 
+  Instance reprTintLiteral : Repr tint_literal
+    := {| repr tl :=
+          match tl with
+            |  TInt_Literal sz x =>
                 ("(TInt_Literal " ++ repr sz ++ " " ++ repr x ++ ")")%string
           end
        |}.
@@ -761,13 +761,13 @@ Section ReprInstances.
        | TERM_Br te b1 b2 =>
          "(TERM_Br " ++ repr te ++ " " ++ repr b1 ++ " " ++ repr b2 ++ ")"
        | TERM_Br_1 b => "(TERM_Br_1 " ++ repr b ++ ")"
-       | TERM_Switch v dest brs  => 
+       | TERM_Switch v dest brs  =>
           "(TERM_Switch " ++ repr v ++ " " ++ repr dest ++ repr brs ++ ")"
-      | TERM_IndirectBr v brs  => 
-          "(TERM_IndirectBr " ++ repr v ++ " " ++ repr brs ++ ")" 
+      | TERM_IndirectBr v brs  =>
+          "(TERM_IndirectBr " ++ repr v ++ " " ++ repr brs ++ ")"
       | TERM_Resume v  => "(TERM_Resume " ++ repr v ++ ")"
       | TERM_Invoke fnptrval args to_label unwind_label  =>
-          "(TERM_Invoke " ++ repr fnptrval ++ " " ++ repr args 
+          "(TERM_Invoke " ++ repr fnptrval ++ " " ++ repr args
           ++ " " ++ repr to_label ++ " " ++ repr unwind_label ++ ")"
       | TERM_Unreachable => "TERM_Unreachable"
        end.

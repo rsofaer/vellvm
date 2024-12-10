@@ -3257,7 +3257,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
   Definition iop_is_div (iop : ibinop) : bool :=
     match iop with
     | UDiv _ => true
-    | SDiv _ => true
+    | SDiv _ _ => true
     | URem   => true
     | SRem   => true
     | _      => false
@@ -3265,7 +3265,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
 
   Definition iop_is_signed (iop : ibinop) : bool :=
     match iop with
-    | SDiv _ => true
+    | SDiv _ _ => true
     | SRem   => true
     | _      => false
     end.
@@ -3458,7 +3458,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
                then ret (DVALUE_Poison mdtyp_of_int)
                else ret (to_dvalue (mdivu x y))
 
-      | SDiv ex =>
+      | SDiv ex vuln =>
           if dtyp_eqb mdtyp_of_int DTYPE_IPTR
           then raise_error "Signed division for iptr."
           else
@@ -4807,7 +4807,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
     in
 
     match uv with
-    | UVALUE_Addr a => ret DTYPE_Pointer  
+    | UVALUE_Addr a => ret DTYPE_Pointer
     | @UVALUE_I sz x => ret (DTYPE_I sz)
     | UVALUE_IPTR x => ret DTYPE_IPTR
     | UVALUE_Double x => ret DTYPE_Double
@@ -5244,7 +5244,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
           end.
 
       constructor; auto with uvalue.
-      
+
       all: try solve [econstructor; eauto with uvalue].
 
     - (* ShuffleVector *)
@@ -5297,7 +5297,7 @@ Module DVALUE(A:Vellvm.Semantics.MemoryAddress.ADDRESS)(IP:Vellvm.Semantics.Memo
       repeat break_match_hyp_inv.
       do 4 eexists. reflexivity.
       apply N.eqb_eq in H0; auto.
-      
+
       Unshelve.
       all : exact (1%positive).
   Qed.

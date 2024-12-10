@@ -460,7 +460,7 @@ Section hiding_notation.
       | Mul nuw nsw => Atom "mul"
       | Shl nuw nsw => Atom "shl"
       | UDiv flag => Atom "udiv"
-      | SDiv flag => Atom "sdiv"
+      | SDiv flag vuln => Atom "sdiv"
       | LShr flag => Atom "lshr"
       | AShr flag => Atom "ashr"
       | URem | SRem => Atom "rem"
