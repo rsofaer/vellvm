@@ -10,7 +10,7 @@ From Stdlib Require Import
      Relations
      RelationClasses
      Morphisms.
-
+Unset Universe Checking.
 From Vellvm.Semantics Require Import
      MemoryAddress
      MemoryParams

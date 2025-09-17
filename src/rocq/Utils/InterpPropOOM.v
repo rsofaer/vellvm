@@ -29,7 +29,12 @@ From ITree Require Import
 
 From Vellvm Require Import
      Utils.PropT.
+     
 
+From ITreeSpec Require Import
+  ITreeSpecDefinition
+  ITreeSpecFacts
+  ITreeSpecCombinatorFacts.
 Require Import Paco.paco.
 
 Import ListNotations.
@@ -42,8 +47,8 @@ Local Open Scope cat_scope.
 (* end hide *)
 
 (* Definition 5.3: Handler Correctness *)
-  Definition handler_correct {E F} (h_spec: E ~> PropT F) (h: E ~> itree F) :=
-    (forall T e ta, ta ≈ h T e -> h_spec T e ta).
+  Definition handler_correct {E F} (h_spec: E ~> itree_spec F) (h: E ~> itree F) :=
+    (forall T e ta RR, ta ≈ h T e -> refines eq_prerel eq_post_rel RR (h_spec T e) (to_itree_spec ta)).
 
 #[global] Instance void1_unit {E} : void1 -< E.
   repeat intro; contradiction.
@@ -52,12 +57,12 @@ Qed.
 Section interp_prop_oom.
 
   Context {E F OOM : Type -> Type} `{OOME: OOM -< E} `{OOMF: OOM -< F}.
-  Context (h_spec : E ~> PropT F) {R1 R2 : Type} (RR : R1 -> R2 -> Prop).
+  Context (h_spec : E ~> itree_spec F) {R1 R2 : Type} (RR : R1 -> R2 -> Prop).
   Context (k_spec : forall T R2, E T -> itree F T -> (T -> itree F R2) -> itree F R2 -> Prop).
 
   Definition k_spec_correct : Prop
-    := forall T (R2 : Type) e k2 t2 ta,
-      h_spec _ e ta ->
+    := forall T (R2 : Type) e k2 t2 ta RR,
+      refines eq_prerel eq_post_rel RR (h_spec T e) (to_itree_spec ta) ->
       t2 ≈ bind ta k2 ->
       k_spec T R2 e ta k2 t2.
 
@@ -101,7 +106,7 @@ Section interp_prop_oom.
 
   | Interp_Prop_OomT_Vis : forall A e k1 k2 (ta t2 : itree F _)
                   (HK : forall (a : A), Returns a ta -> sim (k1 a) (k2 a))
-                  (HSPEC : h_spec _ e ta)
+                  (* (HSPEC : refines eq_prerel eq_post_rel RR (h_spec _ _) (to_itree_spec _) ) *)
                   (* k_spec => t2 ≈ bind ta k2 *)
                   (* k_spec => True *)
                   (KS : k_spec A R2 e ta k2 t2), 
@@ -135,15 +140,16 @@ Section interp_prop_oom.
 
   (* Definition 5.2 *)
   Definition interp_prop_oom' b1 b2 o1 o2 :
-    itree _ R1 -> PropT _ R2 :=
+    itree _ R1 -> itree_spec _ R2 :=
     paco2 (interp_prop_oomT_ b1 b2 o1 o2) bot2.
+    (* to_itree_spec. *)
 
   Definition interp_prop_oom_r :
-    itree _ R1 -> PropT _ R2 :=
+    itree _ R1 -> itree_spec _ R2 :=
     interp_prop_oom' true true false true.
 
   Definition interp_prop_oom_l :
-    itree _ R1 -> PropT _ R2 :=
+    itree _ R1 -> itree_spec _ R2 :=
     interp_prop_oom' true true true false.
 
   #[global] Instance interp_prop_oom_eq_itree_Proper_impl_ :
@@ -272,7 +278,7 @@ Hint Extern 5 (interp_prop_oomTF _ _ _ _ _ _ _ _
 Ltac solve_interp_prop_oom :=
   eauto with INTERP_PROP_OOM.
 #[global] Instance interp_prop_oom_Proper_eq :
-    forall (E F OOM : Type -> Type) (h_spec : forall T : Type, E T -> PropT F T) (k_spec : forall T R2, E T -> itree F T -> (T -> itree F R2) -> itree F R2 -> Prop)
+    forall (E F OOM : Type -> Type) (h_spec : forall T : Type, E T -> itree_spec F T) (k_spec : forall T R2, E T -> itree F T -> (T -> itree F R2) -> itree F R2 -> Prop)
       `{KSWF : @k_spec_WF _ _ h_spec k_spec}
     R (RR : R -> R -> Prop) (HR: Reflexive RR) (HT : Transitive RR) `{OOM -< E} `{OOM -< F},
     Proper (eq ==> eq ==> @eutt _ _ _ RR ==> eq ==> flip Basics.impl) (@interp_prop_oom' E F OOM _ _ h_spec _ _ RR k_spec true true).
@@ -665,7 +671,7 @@ Qed.
 Section interp_prop_oom_extra.
 
   Context {E F OOM : Type -> Type} `{OOME: OOM -< E} `{OOMF: OOM -< F}.
-  Context (h : E ~> PropT F).
+  Context (h : E ~> itree_spec F).
   Context {R1 R2 : Type} (RR : R1 -> R2 -> Prop).
   Context (k_spec : forall T R2, E T -> itree F T -> (T -> itree F R2) -> itree F R2 -> Prop).
   Context `{KSWF : @k_spec_WF _ _ h k_spec}.

@@ -14,6 +14,7 @@ From Stdlib Require Import
 From Vellvm.Syntax Require Import
      DynamicTypes.
 
+Unset Universe Checking.
 From Vellvm.Semantics Require Import
      MemoryAddress
      MemoryParams

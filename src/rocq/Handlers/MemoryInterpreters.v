@@ -54,8 +54,8 @@ From ITreeSpec Require Import
   ITreeSpecFacts
   ITreeSpecCombinatorFacts.
 
-Unset Universe Checking.
 
+Unset Universe Checking.
 Set Implicit Arguments.
 Set Contextual Implicit.
 
@@ -415,7 +415,6 @@ Module Type MemorySpecInterpreter (LP : LLVMParams) (MP : MemoryParams LP) (MMSP
                      let (x0, m) := x in
                      (fun (x1 : err_ub_oom (MemState * T)) (_ : ms x1) => lift_err_ub_oom ret x1) x0 m)).
     Defined.
-
     Definition my_handle_intrinsic_prop' :
       forall T : Type, IntrinsicE T -> stateT MemState (itree_spec Effout) T.
     Proof using.
@@ -1598,9 +1597,11 @@ Module Type MemoryExecInterpreter (LP : LLVMParams) (MP : MemoryParams LP) (MMEP
           apply CIH.
         - cbn.
           gclo.
-          econstructor.
+          admit.
+          (* econstructor.
 
-          
+
+          right.
           gfinal.
           right.
           eapply paco2_mon_bot.
@@ -1670,7 +1671,7 @@ Module Type MemoryExecInterpreter (LP : LLVMParams) (MP : MemoryParams LP) (MMEP
           intros x0 x1 x2 PR.
           apply PR.
       }
-      admit.
+      admit. *)
     Abort.
 
     (* Lemma strict_refines_unpadded_to_itree_spec : *)

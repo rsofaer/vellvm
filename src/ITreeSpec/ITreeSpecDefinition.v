@@ -53,12 +53,14 @@ Definition itree_spec (E : Type -> Type) (R : Type) :=
 
 Import EitherMonad.
 
-Universes u v w.
+(* Universes u v w.
 
 Definition my_handle_memory_prop' {E : Type@{u} -> Type@{v}} :
   forall T : Type@{w}, itree_spec E T.
 Proof using.
   intros T.
+
+  
   (*
 Error:
 In environment
@@ -71,8 +73,15 @@ except.u2 <= SpecEvent.u3 because SpecEvent.u3 < Functor_itree.u1 <= ITree.map.u
 
    *)
   refine (Vis (@Spec_forall E (eitherT T (fun X => X) T)) (fun (x : (eitherT T (fun X => X) T)) => _)).
+  destruct x.
+  destruct unEitherT.
+  apply (Ret t).
+  apply (Ret t).
+  apply ITree.spin.
+  apply ITree.spin.
+Defined.
 Abort.
-
+ *)
 Notation itree_spec' E R := (itree' (SpecEvent E) R).
 
   Inductive contains_quantifiers {F R} : itree_spec F R -> Prop :=

@@ -1811,8 +1811,9 @@ Qed.
        *)
       specialize (H a).
       remember (observe (k a)) as oka.
-      hinduction H before R1; intros.
-      + eapply H0. rewrite <- Heqoka.
+      admit.
+      (* hinduction H before R1; intros. *)
+      (* + eapply H0. rewrite <- Heqoka.
         gunfold H0.
         induction H0.
         * destruct IN; eauto.
@@ -1902,12 +1903,11 @@ Qed.
       remember (observe (k a)) as ka.
       clear BIND.
       hinduction H before R1; intros.
-      + 
+      +  *)
 
-      admit.
     (*   gclo. *)
     (*   eapply refine_trans_clo_intro with (post1:=eq_post_rel) (post2:=eq_post_rel); *)
-    (*     try typeclasses eauto; auto_ctrans_eq; eauto; try reflexivity. *)
+    (*     try typeclasses eauto; auto_ctrans_eq; eauto; try reflexivit y. *)
     (*   2: { *)
     (*     pstep; red. *)
     (*     constructor. *)
@@ -2060,6 +2060,11 @@ Qed.
       apply H0.
     - (* ExistsL *)
       admit.
+  }
+    -
+    intros.
+    rewrite H.
+    auto. 
   Admitted.
 
 End refine_closure.

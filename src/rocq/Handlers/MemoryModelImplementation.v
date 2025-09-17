@@ -2,6 +2,7 @@ From Vellvm.Syntax Require Import
      DataLayout
      DynamicTypes.
 
+Unset Universe Checking.
 From Vellvm.Semantics Require Import
      MemoryAddress
      MemoryParams

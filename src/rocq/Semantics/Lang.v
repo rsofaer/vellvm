@@ -3,13 +3,15 @@ From Vellvm Require Import
      Semantics.Memory.DvalueBytes
      Semantics.LLVMParams
      Semantics.GepM
-     Semantics.Denotation
-
+     Semantics.Denotation.
+From Vellvm Require Import
      Handlers.Global
      Handlers.Stack
      Handlers.Intrinsics
      Handlers.Pick
-     Handlers.MemoryModel
+     Handlers.MemoryModel.
+Unset Universe Checking.
+From Vellvm Require Import
      Handlers.MemoryInterpreters.
 
   Module Type Memory (LP: LLVMParams).

@@ -109,21 +109,23 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
 
     Arguments lift_err_ub_oom_post_ret {_ _ _ _ _ _} _ _ _.
 
-    (* Definition PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> itree_spec E. *)
-    (*   intros T p. *)
-    (*   refine (match p with *)
-    (*           | pickUnique x => _ *)
-    (*           | pickNonPoison x => _ *)
-    (*           | pick x => _ *)
-    (*           end). *)
-    (*   - (* pickUnique *) *)
-    (*     admit. *)
-    (*   - (* pickNonPoison *) *)
-    (*     admit. *)
-    (*   - (* pick *) *)
-    (*     apply (x <- trigger (@Spec_forall E {dv : dvalue | concretize_u x (ret dv)});; _). *)
-    (*     refine (Vis (@Spec_forall Effout {a : (err_ub_oom (MemState * (store_id * T))) | ms (fmap (fun '(m, (sid, x)) => (m, x)) a)}) (fun (x : {a : (err_ub_oom (MemState * (store_id * T))) | ms (fmap (fun '(m, (sid, x)) => (m, x)) a)}) => _)). *)
+    Definition PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> itree_spec E.
+      intros T p.
+      refine (match p with
+              | pickUnique x => _
+              | pickNonPoison x => _
+              | pick x => _
+              end).
+      - (* pickUnique *)
+        admit.
+      - (* pickNonPoison *)
+        admit.
+      - (* pick *)
+        (* apply (x <- trigger (@Spec_forall E {dv : dvalue | concretize_u x (ret dv)});; _). *)
+        (* refine (Vis (@Spec_forall Effout {a : (err_ub_oom (MemState * (store_id * T))) | ms (fmap (fun '(m, (sid, x)) => (m, x)) a)}) (fun (x : {a : (err_ub_oom (MemState * (store_id * T))) | ms (fmap (fun '(m, (sid, x)) => (m, x)) a)}) => _)). *)
+        admit.
     (* Defined. *)
+  Admitted.
 
 
     (* (* Unique picks have two possibilities... *)
@@ -156,7 +158,7 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
     (*     t ≈ lift_err_ub_oom_post_ret id res (fun _ => True) (fun (dv : dvalue) (_ : fmap id res = ret dv) => I) -> *)
     (*     PickUvalue_handler (@pick _ _ (fun _ _ => True) x) t. *)
 
-    Inductive PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> PropT E :=
+    (* Inductive PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> itree_spec E :=
     | PickUV_UniqueUB : forall x t,
         ~ (unique_prop x) ->
         PickUvalue_handler (@pickUnique _ _ (fun _ _ => True) x) t
@@ -179,16 +181,16 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
       forall x (res : err_ub_oom dvalue) (t : itree E {y : dvalue | True})
         (Conc : concretize_u x res),
         t ≈ lift_err_ub_oom_post_ret id res (fun _ => True) (fun (dv : dvalue) (_ : fmap id res = ret dv) => I) ->
-        PickUvalue_handler (@pick _ _ (fun _ _ => True) x) t.
+        PickUvalue_handler (@pick _ _ (fun _ _ => True) x) t. *)
 
     Section PARAMS_MODEL.
       Variable (E F: Type -> Type).
 
-      Definition E_trigger_prop : E ~> PropT (E +' F) :=
-        fun R e => fun t => t ≈ r <- trigger e ;; ret r.
+      Definition E_trigger_prop : E ~> itree_spec (E +' F) :=
+        fun R e => r <- trigger e ;; ret r.
 
-      Definition F_trigger_prop : F ~> PropT (E +' F) :=
-        fun R e => fun t => t ≈ r <- trigger e ;; ret r.
+      Definition F_trigger_prop : F ~> itree_spec (E +' F) :=
+        fun R e => r <- trigger e ;; ret r.
 
       Definition model_undef_k_spec
         `{UB: UBE -< E +' F}
@@ -199,7 +201,10 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
         (t2 : itree (E +' F) R) : Prop
         := contains_UB ta \/ eutt eq t2 (bind ta k2).
 
-      #[global] Instance k_spec_WF_model_undef_k_spec `{FAIL: FailureE -< E +' F} `{UB: UBE -< E +' F} `{OOM_OUT : OOME -< F} : k_spec_WF (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) (@model_undef_k_spec UB).
+      #[global] Instance k_spec_WF_model_undef_k_spec `{FAIL: FailureE -< E +' F} 
+                                                      `{UB: UBE -< E +' F} 
+                                                      `{OOM_OUT : OOME -< F} : 
+        k_spec_WF (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) (@model_undef_k_spec UB).
       Proof using.
         split.
         - intros A R2 e ta k2.
@@ -221,7 +226,7 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
         interp_prop_oom_r (OOM:=OOME) (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) RR (@model_undef_k_spec UB).
 
       Definition model_undef `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< F}
-        {T} (RR : T -> T -> Prop) (ts : PropT (E +' PickUvalueE +' F) T) : PropT (E +' F) T:=
+        {T} (RR : T -> T -> Prop) (ts : itree_spec (E +' PickUvalueE +' F) T) : itree_spec (E +' F) T :=
         fun t_picked => exists t_pre, ts t_pre /\ model_undef_h RR t_pre t_picked.
     End PARAMS_MODEL.
 
