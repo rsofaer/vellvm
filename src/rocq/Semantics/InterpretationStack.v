@@ -91,7 +91,7 @@ Module Type InterpreterStack_common (LP : LLVMParams) (MEM : Memory LP).
 
     Definition interp_mcfg4 {R} RR_mem RR_pick (t: itree L0 R) g l sid m : itree_spec L4 (MemState * (store_id * (@stack_frame uvalue local_env * @stack uvalue local_env * (global_env * R)))) :=
       let L3_trace       := interp_mcfg3 RR_mem t g l sid m in
-      let L4_trace       := model_undef RR_pick L3_trace in
+      let L4_trace       := model_undef__ RR_pick L3_trace in
       L4_trace.
 
     Definition interp_mcfg4_exec {R} (t: itree L0 R) g l sid m : itree L4 (MemState * (store_id * (@stack_frame uvalue local_env * @stack uvalue local_env * (global_env * R)))) :=
@@ -156,7 +156,7 @@ Module Type InterpreterStack_common (LP : LLVMParams) (MEM : Memory LP).
       let L2_trace       := interp_local L1_trace l in
       L2_trace.
 
-    Definition interp_cfg3 {R} RR (t: itree instr_E R) (g: global_env) (l: local_env) sid (m: MemState) : PropT (CallE +' PickE +' OOME +' LLVMExcE uvalue +' UBE +' DebugE +' FailureE) (MemState * (store_id * (local_env * (global_env * R)))) :=
+    Definition interp_cfg3 {R} RR (t: itree instr_E R) (g: global_env) (l: local_env) sid (m: MemState) : itree_spec (CallE +' PickE +' OOME +' LLVMExcE uvalue +' UBE +' DebugE +' FailureE) (MemState * (store_id * (local_env * (global_env * R)))) :=
       let L2_trace       := interp_cfg2 t g l in
       let L3_trace       := interp_memory_spec RR L2_trace sid m in
       L3_trace.

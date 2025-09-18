@@ -21,7 +21,10 @@ From ITree Require Import
      ITree
      Eq.Eqit
      Eq.EqAxiom.
-
+From ITreeSpec Require Import
+  ITreeSpecDefinition
+  ITreeSpecFacts
+  ITreeSpecCombinatorFacts.
 From Paco Require Import paco.
 
 Set Implicit Arguments.
@@ -64,9 +67,9 @@ Section PARAMS_MODEL.
   Context `{O : OOME -< E}.
   Notation Effin := E.
   Notation Effout := E.
-
-  Definition refine_OOM_handler : Effin ~> PropT Effout
-    := fun _ e x => x ≈ trigger e.
+  
+  Definition refine_OOM_handler : Effin ~> itree_spec Effout
+    := fun R e => x <- trigger e;; ret x.
 
   Definition refine_OOM_k_spec
     {T R : Type}
@@ -91,16 +94,8 @@ Section PARAMS_MODEL.
       auto.
   Defined.
 
-  Definition refine_OOM_h_flip {T} (RR : relation T) (target source : itree Effout T) : Prop
-    := @interp_prop_oom_l Effin Effout OOME _ _ refine_OOM_handler _ _ RR (@refine_OOM_k_spec) target source.
-
-  Arguments refine_OOM_h_flip /.
-
-  Definition refine_OOM_h {T} (RR : relation T) (source target : itree Effout T) : Prop
-    := refine_OOM_h_flip (flip RR) target source.
-
-  Definition refine_OOM {T} (RR : relation T) (sources : PropT Effout T) (target : itree Effout T) : Prop
-    := exists source, sources source /\ refine_OOM_h RR source target.
+  Definition refine_OOM {T} (RR : relation T) (spec : itree_spec Effout T) (target : itree Effout T) : Prop
+    := refines eq_prerel eq_post_rel RR (to_itree_spec target) spec.
 
   Ltac abs :=
     match goal with
@@ -109,7 +104,7 @@ Section PARAMS_MODEL.
         try solve [eapply eqit_inv in H; contradiction]
     end.
 
-  #[global] Instance refine_OOM_h_flip_transitive {R} {RR : relation R} `{Transitive _ RR} : Transitive (refine_OOM_h_flip RR).
+  (* #[global] Instance refine_OOM_h_flip_transitive {R} {RR : relation R} `{Transitive _ RR} : Transitive (refine_OOM_h_flip RR).
   Proof using.
     unfold Transitive.
 
@@ -333,7 +328,7 @@ Section PARAMS_MODEL.
     assert (Transitive (flip RR)).
     { repeat intro. subst. unfold flip in *; etransitivity; eauto. }
     repeat intro. etransitivity; eauto.
-  Qed.
+  Qed. *)
 
 End PARAMS_MODEL.
 
@@ -361,7 +356,7 @@ Section PARAMS_INTERP.
 
 End PARAMS_INTERP.
 
-Lemma eutt_refine_oom_h :
+(* Lemma eutt_refine_oom_h :
   forall {T} {E F} (RR : relation T) `{REF: Reflexive _ RR} `{TRANS : Transitive _ RR}
     (t1 t2 : itree (E +' OOME +' F) T),
     eutt RR t1 t2 ->
@@ -422,7 +417,7 @@ Qed.
 #[global] Instance refine_OOM_h_eq_itree {E F T RR} : Proper (eq_itree eq ==> eq_itree eq ==> iff) (@refine_OOM_h E F T RR).
 repeat intro. rewrite H, H0.
 reflexivity.
-Qed.
+Qed. *)
 
 (* TODO: broken after k_spec changes *)
 (* Lemma refine_OOM_h_bind : *)

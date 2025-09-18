@@ -1,3 +1,4 @@
+Unset Universe Checking.
 From Vellvm Require Import
   Utilities
   AstLib
@@ -12,7 +13,6 @@ From Vellvm Require Import
   DynamicTypes.
 
 (* Maybe also import InterpretationStack *)
-
 From ExtLib.Structures Require Export
   Applicative Monad Monoid.
 

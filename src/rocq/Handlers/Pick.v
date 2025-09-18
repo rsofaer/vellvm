@@ -18,7 +18,9 @@ From ITree Require Import
   Events.State.
 
 From ITreeSpec Require Import
-  ITreeSpecDefinition.
+  ITreeSpecDefinition
+  ITreeSpecFacts
+  ITreeSpecCombinatorFacts.
 
 From Vellvm Require Import
   Utilities
@@ -108,16 +110,35 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
     Defined.
 
     Arguments lift_err_ub_oom_post_ret {_ _ _ _ _ _} _ _ _.
+    Definition concretize_picks_spec {E} `{FailureE -< E} `{UBE -< E} `{OOME -< E} : PickUvalueE ~> itree_spec E :=
+      fun T p =>
+        match p with
+        | pick u
+        | pickNonPoison u
+        | pickUnique u =>
+            let res_t := concretize_uvalue u in
+            fmap (fun dv => exist _ dv I) (to_itree_spec res_t)
+        end.
 
-    Definition PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> itree_spec E.
+
+    (* Definition PickUvalue_handler  {E} `{FE:FailureE -< E} `{FO:UBE -< E} `{OO: OOME -< E} : PickUvalueE ~> itree_spec E.
       intros T p.
       refine (match p with
               | pickUnique x => _
               | pickNonPoison x => _
               | pick x => _
               end).
-      - (* pickUnique *)
-        admit.
+      Search (uvalue -> _).
+      - destruct (pick_unique_uvalue x).
+        + 
+      
+      destruct (uvalue_to_dvalue x) as [err|err] eqn:Herr.
+        + (* Concretization failed *)
+          apply (to_itree_spec (raise_error err)).
+          + constructor.
+            constructor.
+            constructor;
+            auto.   
       - (* pickNonPoison *)
         admit.
       - (* pick *)
@@ -126,7 +147,7 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
         admit.
     (* Defined. *)
   Admitted.
-
+ *)
 
     (* (* Unique picks have two possibilities... *)
 
@@ -204,7 +225,7 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
       #[global] Instance k_spec_WF_model_undef_k_spec `{FAIL: FailureE -< E +' F} 
                                                       `{UB: UBE -< E +' F} 
                                                       `{OOM_OUT : OOME -< F} : 
-        k_spec_WF (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) (@model_undef_k_spec UB).
+        k_spec_WF (case_ E_trigger_prop (case_ concretize_picks_spec F_trigger_prop)) (@model_undef_k_spec UB).
       Proof using.
         split.
         - intros A R2 e ta k2.
@@ -222,12 +243,25 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
           auto.
       Defined.
 
-      Definition model_undef_h `{FAIL: FailureE -< E +' F} `{UB: UBE -< E +' F} `{OOM_OUT : OOME -< F} {R1 R2} (RR : R1 -> R2 -> Prop) :=
-        interp_prop_oom_r (OOM:=OOME) (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) RR (@model_undef_k_spec UB).
+      (* Definition pick_exec_h `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< E +' F} :
+        (E +' PickE +' F) ~> itree (E +' F) :=
+        case_ E_trigger
+          (case_ concretize_picks F_trigger). *)
+      (* Definition exec_undef `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< E +' F} :
+        itree (E +' PickE +' F) ~> itree (E +' F) :=
+        interp pick_exec_h. *)
+      Definition model_undef_h `{FAIL: FailureE -< E +' F} `{UB: UBE -< E +' F} `{OOM_OUT : OOME -< E +' F} : 
+        (E +' PickUvalueE +' F) ~> itree_spec (E +' F) :=
+        (case_ E_trigger_prop (case_ concretize_picks_spec F_trigger_prop)).
+
+      (* Definition model_undef_h `{FAIL: FailureE -< E +' F} `{UB: UBE -< E +' F} `{OOM_OUT : OOME -< F} {R1 R2} (RR : R1 -> R2 -> Prop) := *)
+        (* interp_prop_oom_r (OOM:=OOME) (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) RR (@model_undef_k_spec UB). *)
 
       Definition model_undef `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< F}
         {T} (RR : T -> T -> Prop) (ts : itree_spec (E +' PickUvalueE +' F) T) : itree_spec (E +' F) T :=
-        fun t_picked => exists t_pre, ts t_pre /\ model_undef_h RR t_pre t_picked.
+        interp_spec model_undef_h ts.
+        (* fun t_picked => exists t_pre, refines eq_prerel eq_post_rel RR t_pre ts. *)
+(* exists t_pre, ts t_pre /\ model_undef_h RR t_pre t_picked. *)
     End PARAMS_MODEL.
 
   End PickPropositional.

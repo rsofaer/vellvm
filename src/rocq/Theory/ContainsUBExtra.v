@@ -545,7 +545,7 @@ Section refine_OOM_h_lemmas.
   Hint Resolve interp_PropT__mono : paco.
 
   (* Only the <- direction is true *)
-  Global Instance proper_refine_OOM_h
+  (* Global Instance proper_refine_OOM_h
     {R} {RR : relation R} : Proper (@refine_OOM_h Eff _ _ RR ==> flip impl) contains_UB_Extra.
   unfold Proper, respectful.
   intros x y EQ UB; revert x EQ.
@@ -696,7 +696,7 @@ Section refine_OOM_h_lemmas.
     rewrite REF.
     eauto.
   Qed.
-
+ *)
   Lemma contains_UB_Extra_raiseOOM :
     forall {E F G J} `{O : OOME -< E +' F +' G +' K +' UBE +' J} {X} msg,
       (forall X e1 e2, O X e1 <> inr1 (inr1 (inr1 (inr1 (inl1 e2))))) ->

@@ -515,7 +515,6 @@ Module Type MemorySpecInterpreter (LP : LLVMParams) (MP : MemoryParams LP) (MMSP
     Definition interp_memory_spec {R} :
       itree Effin R -> MemStateFreshT (itree_spec Effout) R :=
       fun (t : itree Effin R) => interp interp_memory_spec_h t.
-
   End Interpreters.
 End MemorySpecInterpreter.
 

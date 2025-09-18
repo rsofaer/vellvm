@@ -139,7 +139,7 @@ Section interp_prop_oom.
   Hint Resolve interp_prop_oomT_idclo_mono : paco.
 
   (* Definition 5.2 *)
-  Definition interp_prop_oom' b1 b2 o1 o2 :
+  (* Definition interp_prop_oom' b1 b2 o1 o2 :
     itree _ R1 -> itree_spec _ R2 :=
     paco2 (interp_prop_oomT_ b1 b2 o1 o2) bot2.
     (* to_itree_spec. *)
@@ -1194,4 +1194,5 @@ Section interp_prop_oom_extra.
     - inv Heqi.
   Qed.
 
-End interp_prop_oom_extra.
+End interp_prop_oom_extra. *)
+End interp_prop_oom.

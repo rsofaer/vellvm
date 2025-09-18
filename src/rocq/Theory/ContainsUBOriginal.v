@@ -541,7 +541,7 @@ Section refine_OOM_h_lemmas.
   Hint Resolve interp_PropT__mono : paco.
 
   (* Only the <- direction is true *)
-  Global Instance proper_refine_OOM_h
+  (* Global Instance proper_refine_OOM_h
            {R} {RR : relation R} : Proper (@refine_OOM_h Eff _ _ RR ==> flip impl) contains_UB.
     unfold Proper, respectful.
     intros x y EQ UB; revert x EQ.
@@ -680,9 +680,9 @@ Section refine_OOM_h_lemmas.
     (*     eapply FindUB with (s := s) (k:=k2). *)
     (*     reflexivity. *)
     (* } *)
-  Admitted.
+  Admitted. *)
 
-  Lemma contains_UB_refine_OOM_h :
+  (* Lemma contains_UB_refine_OOM_h :
     forall R (RR : relation R) (x y : itree Eff R),
       contains_UB y ->
       refine_OOM_h RR x y ->
@@ -691,5 +691,5 @@ Section refine_OOM_h_lemmas.
     intros R RR x y UB REF.
     rewrite REF.
     eauto.
-  Qed.
+  Qed. *)
 End refine_OOM_h_lemmas.

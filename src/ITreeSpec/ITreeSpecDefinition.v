@@ -274,3 +274,27 @@ Proof.
   pstep_reverse. auto with itree_spec.
   apply H.
 Qed.
+
+Definition to_handler_spec {E M: Type -> Type} (h: E ~> M): (SpecEvent E) ~> (SpecEvent M) := 
+ fun T e => match e with
+| Spec_vis e => Spec_vis (h _ e)
+| Spec_forall A => Spec_forall A
+| Spec_exists A => Spec_exists A
+end.
+Definition interp_spec {E M : Type -> Type}
+     {FM : Functor M} {MM : Monad M} {IM : MonadIter M}
+     (h : E ~> M) : itree_spec E ~> (SpecEvent M).
+  Proof.
+    admit.
+  Admitted.
+
+(* Definition interp {E M : Type -> Type}
+           {FM : Functor M} {MM : Monad M} {IM : MonadIter M}
+           (h : E ~> M) :
+  itree E ~> M := fun R =>
+  iter (fun t =>
+    match observe t with
+    | RetF r => ret (inr r)
+    | TauF t => ret (inl t)
+    | VisF e k => fmap (fun x => inl (k x)) (h _ e)
+    end). *)
