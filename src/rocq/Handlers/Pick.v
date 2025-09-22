@@ -20,7 +20,8 @@ From ITree Require Import
 From ITreeSpec Require Import
   ITreeSpecDefinition
   ITreeSpecFacts
-  ITreeSpecCombinatorFacts.
+  ITreeSpecCombinatorFacts
+  MRecSpec.
 
 From Vellvm Require Import
   Utilities
@@ -257,10 +258,10 @@ Module Make (LP : LLVMParams) (MP : MemoryParams LP) (Byte : ByteModule LP.ADDR 
       (* Definition model_undef_h `{FAIL: FailureE -< E +' F} `{UB: UBE -< E +' F} `{OOM_OUT : OOME -< F} {R1 R2} (RR : R1 -> R2 -> Prop) := *)
         (* interp_prop_oom_r (OOM:=OOME) (case_ E_trigger_prop (case_ PickUvalue_handler F_trigger_prop)) RR (@model_undef_k_spec UB). *)
 
-      Definition model_undef `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< F}
+(*       Definition model_undef `{FailureE -< E +' F} `{UBE -< E +' F} `{OOME -< F}
         {T} (RR : T -> T -> Prop) (ts : itree_spec (E +' PickUvalueE +' F) T) : itree_spec (E +' F) T :=
         interp_spec model_undef_h ts.
-        (* fun t_picked => exists t_pre, refines eq_prerel eq_post_rel RR t_pre ts. *)
+  *)       (* fun t_picked => exists t_pre, refines eq_prerel eq_post_rel RR t_pre ts. *)
 (* exists t_pre, ts t_pre /\ model_undef_h RR t_pre t_picked. *)
     End PARAMS_MODEL.
 

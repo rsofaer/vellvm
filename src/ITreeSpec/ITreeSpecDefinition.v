@@ -25,6 +25,7 @@ From ITree Require Import
 From ExtLib Require Import
   Structures.Monad
   Structures.Functor.
+  
 
 Variant SpecEvent (E : Type -> Type) : Type -> Type :=
 | Spec_vis {X} (e : E X) : SpecEvent E X
@@ -275,18 +276,25 @@ Proof.
   apply H.
 Qed.
 
-Definition to_handler_spec {E M: Type -> Type} (h: E ~> M): (SpecEvent E) ~> (SpecEvent M) := 
+(* Definition to_handler_spec {E M: Type -> Type} (h: E ~> M): (SpecEvent E) ~> (SpecEvent M) := 
  fun T e => match e with
 | Spec_vis e => Spec_vis (h _ e)
 | Spec_forall A => Spec_forall A
 | Spec_exists A => Spec_exists A
+end. *)
+(* Definition to_handler_spec {E M: Type -> Type} (h: E ~> M): (SpecEvent E) ~> (itree_spec M) := 
+ fun T e => match e with
+| Spec_vis e => ret (h _ e)
+| Spec_forall A => ret A
+| Spec_exists A => ret A
 end.
 Definition interp_spec {E M : Type -> Type}
      {FM : Functor M} {MM : Monad M} {IM : MonadIter M}
-     (h : E ~> M) : itree_spec E ~> (SpecEvent M).
+     (h : E ~> M) : itree_spec E ~> (SpecEvent M) := 
+  interp 
   Proof.
     admit.
-  Admitted.
+  Admitted *)
 
 (* Definition interp {E M : Type -> Type}
            {FM : Functor M} {MM : Monad M} {IM : MonadIter M}

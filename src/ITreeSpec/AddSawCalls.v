@@ -17,7 +17,7 @@ From Paco Require Import paco.
 
 Local Open Scope entree_scope.
 Local Open Scope list_scope.
-Variant call_depE (A : Type) (B : A -> Type) : Type@{entree_u} := CallDep (a : A).
+Variant call_depE (A : Type) (B : A -> Type) : Type@{itree_spec_u} := CallDep (a : A).
 #[global] Instance call_depE_encodes A B : EncodedType (call_depE A B) :=
   fun c => match c with CallDep _ _ a => B a end.
 
@@ -30,9 +30,9 @@ Inductive call_var : call_stack -> call_dep_type -> Type :=
     call_var G t -> call_var (u::G) t.
 
 
-(* call_var is a function into Type entree_u +1*)
+(* call_var is a function into Type itree_spec_u +1*)
 
-Definition call_dep_type_trans (c : call_dep_type) : Type@{entree_u} :=
+Definition call_dep_type_trans (c : call_dep_type) : Type@{itree_spec_u} :=
   match c with ct_intro A B => call_depE A B end.
 
 #[global] Instance call_dep_type_trans_encodes (C : call_dep_type) : 
@@ -45,10 +45,10 @@ Definition uncall {A B} (c : call_depE A B) : A :=
   match c with CallDep _ _ a => a end.
 
 Section SpecM.
-(*can't give SpecM E Γ A : Type entree_u, but that doesn't mean we can't 
-  map into entree E R : Type entree_u*)
+(*can't give SpecM E Γ A : Type itree_spec_u, but that doesn't mean we can't 
+  map into entree E R : Type itree_spec_u*)
 
-Inductive SpecM (E : Type) `{EncodedType E} : call_stack -> Type@{entree_u} -> Type := 
+Inductive SpecM (E : Type) `{EncodedType E} : call_stack -> Type@{itree_spec_u} -> Type := 
   | RetS Γ A (a : A) : SpecM E Γ A
   | BindS Γ A B : SpecM E Γ A -> (A -> SpecM E Γ B) -> SpecM E Γ B
   | IterS Γ A B : (A -> SpecM E Γ (A + B)) -> A -> SpecM E Γ B
@@ -105,7 +105,7 @@ Arguments CallS {_ _ _} _ _ _.
 Arguments MrecS {_ _ _ _ _} _ _.
 Arguments TriggerS {_ _ _} _.
 
-Fixpoint denote_SpecM (E : Type@{entree_u}) `{EncodedType E} Γ A (spec : SpecM E Γ A) : 
+Fixpoint denote_SpecM (E : Type@{itree_spec_u}) `{EncodedType E} Γ A (spec : SpecM E Γ A) : 
   entree_spec (denote_call_stack E Γ) A :=
   match spec with
   | RetS a => Ret a

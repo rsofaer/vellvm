@@ -37,11 +37,11 @@ Inductive ErrorE : Set :=
 Global Instance EncodingType_ErrorE : EncodingType ErrorE := fun _ => Empty_set.
 
 (* The event type for SpecM computations, given an underlying event type *)
-Definition SpecE (E : EvType) : Type@{entree_u} :=
+Definition SpecE (E : EvType) : Type@{itree_spec_u} :=
   SpecEvent (ErrorE + E).
 
 (* The return type for a SpecEE effect in a SpecM computation *)
-Definition SpecERet E (e:SpecE E) : Type@{entree_u} := encodes e.
+Definition SpecERet E (e:SpecE E) : Type@{itree_spec_u} := encodes e.
 
 Definition SpecEv E : EvType := Build_EvType (SpecE E) _.
 
@@ -113,7 +113,7 @@ Definition interp_SpecM {E R} (t:SpecM E R) : entree (SpecEv E) R :=
 
 (* An infinite stream represented as a function from a natural number index to
 the element at that index *)
-Inductive Stream (A:Type@{entree_u}) : Type@{entree_u} :=
+Inductive Stream (A:Type@{itree_spec_u}) : Type@{itree_spec_u} :=
 | MkStream (f : nat -> A).
 
 Arguments MkStream {_} _.
@@ -126,7 +126,7 @@ Definition streamGet {A} (s:Stream A) i : A :=
 
 (* A finite or infinite sequence, where the latter is represented as a monadic
 function from the natural number index to the element at that index *)
-Definition mseq (E:EvType) len (A:Type@{entree_u}) : Type@{entree_u} :=
+Definition mseq (E:EvType) len (A:Type@{itree_spec_u}) : Type@{itree_spec_u} :=
   match len with
   | TCNum n => VectorDef.t A n
   | TCInf => Stream (SpecM E A)
@@ -139,7 +139,7 @@ Inductive FunFlag : Set := IsFun | IsData.
 (* Elements of type descriptions that use monadic functions instead of FunIxs.
 If the FunFlag flag is true, we are translating a monadic function type, and
 should use funElem *)
-Fixpoint tpElemEnv (E:EvType) env (isf : FunFlag) T : Type@{entree_u} :=
+Fixpoint tpElemEnv (E:EvType) env (isf : FunFlag) T : Type@{itree_spec_u} :=
   match T with
   | Tp_M R => SpecM E (tpElemEnv E env IsData R)
   | Tp_Pi K B =>
@@ -483,7 +483,7 @@ Definition FixS {E T} (f: specFun E T -> specFun E T) : specFun E T :=
  **)
 
 (* A tuple of spec functions of the given types *)
-Fixpoint specFuns E Ts : Type@{entree_u} :=
+Fixpoint specFuns E Ts : Type@{itree_spec_u} :=
   match Ts with
   | nil => unit
   | T :: Ts' => specFun E T * specFuns E Ts'
@@ -507,7 +507,7 @@ Fixpoint joinSpecFuns {E Ts} : SpecM E (specFuns E Ts) -> specFuns E Ts :=
 
 
 (* Build the multi-arity function type specFun E T1 -> ... specFun E Tn -> A *)
-Fixpoint arrowSpecFuns E (Ts : list TpDesc) (A : Type@{entree_u}) : Type@{entree_u} :=
+Fixpoint arrowSpecFuns E (Ts : list TpDesc) (A : Type@{itree_spec_u}) : Type@{itree_spec_u} :=
   match Ts with
   | nil => A
   | T :: Ts' => specFun E T -> arrowSpecFuns E Ts' A
@@ -533,7 +533,7 @@ Fixpoint specFunsToMultiInterp {E Ts} : specFuns E Ts -> MultiFxInterp (SpecEv E
           (specFunsToMultiInterp (snd fs))
   end.
 
-Definition MultiFixBodies E Ts : Type@{entree_u} :=
+Definition MultiFixBodies E Ts : Type@{itree_spec_u} :=
   arrowSpecFuns E Ts (specFuns E Ts).
 
 Definition MultiFixS {E Ts} (funs : MultiFixBodies E Ts) : specFuns E Ts :=

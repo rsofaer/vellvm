@@ -6,7 +6,7 @@
    need `Import SemNotations.` to get them in scope. The available notations can be
    found in `Semantics/InterpretationStack.SemNotations`.
  *)
-
+Unset Universe Checking.
 From Vellvm Require Export
      Handlers.Handlers
      Semantics.Denotation

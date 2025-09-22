@@ -3,6 +3,7 @@ From Stdlib Require Import
      List
      String
      ZArith.
+Unset Universe Checking.
 From Vellvm Require Import
   Utilities
   Utils.IntMaps

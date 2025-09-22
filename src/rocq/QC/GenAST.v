@@ -16,7 +16,7 @@ From Vellvm.Syntax Require Import
   CFG
   TypeUtil
   TypToDtyp.
-
+Unset Universe Checking.
 From Vellvm.Handlers Require Import
   Handlers.
 

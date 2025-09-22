@@ -24,7 +24,7 @@ Local Open Scope entree_scope.
 
 Set Printing Universes.
 
-Inductive TpEnc : Type@{entree_u} :=
+Inductive TpEnc : Type@{itree_spec_u} :=
   | TpEnc_nat : TpEnc
   | TpEnc_unit : TpEnc
   | TpEnc_pair : TpEnc -> TpEnc -> TpEnc
@@ -36,7 +36,7 @@ Inductive TpEnc : Type@{entree_u} :=
 Check TpEnc : Type@{Set + 1}.
 
 
-Variant SpecEvent (E : Type@{entree_u}) : Type@{entree_u}:=
+Variant SpecEvent (E : Type@{itree_spec_u}) : Type@{itree_spec_u}:=
   | Spec_vis (e : E)
   | Spec_forall (tp : TpEnc)
   | Spec_exists (tp : TpEnc).
@@ -44,7 +44,7 @@ Arguments Spec_vis {_}.
 Arguments Spec_forall {_}.
 Arguments Spec_exists {_}.
 
-Fixpoint TpEnc_enc (tp : TpEnc) : Type@{entree_u} :=
+Fixpoint TpEnc_enc (tp : TpEnc) : Type@{itree_spec_u} :=
   match tp with
   | TpEnc_nat => nat
   | TpEnc_unit => unit

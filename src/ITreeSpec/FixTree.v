@@ -20,8 +20,9 @@ Import Monads.
 
 Section FixTree.
 
+Universe itree_spec_u.
 (*
-Fixpoint tpElem (T : TpDesc) : Type@{entree_u} :=
+Fixpoint tpElem (T : TpDesc) : Type@{itree_spec_u} :=
   match T with
   | Tp_M R => FunIx (Tp_M R)
   | Tp_Pi A B => FunIx (Tp_Pi A B)
@@ -32,7 +33,7 @@ Fixpoint tpElem (T : TpDesc) : Type@{entree_u} :=
   | Tp_Sigma A B => { a:stpElem A & tpElem (B a) }
   end.
 
-Fixpoint FunInput (T:TpDesc) : Type@{entree_u} :=
+Fixpoint FunInput (T:TpDesc) : Type@{itree_spec_u} :=
   match T with
   | Tp_M _ => unit
   | Tp_Pi A B => { a : stpElem A & FunInput (B a) }
@@ -48,7 +49,7 @@ Fixpoint FunOutputDesc T : FunInput T -> TpDesc :=
   | _ => fun _ => Tp_SType SimpTp_Void
   end.
 
-Definition FunOutput T (args: FunInput T) : Type@{entree_u} :=
+Definition FunOutput T (args: FunInput T) : Type@{itree_spec_u} :=
   tpElem (FunOutputDesc T args).
 *)
 
@@ -58,7 +59,7 @@ Definition FunOutput T (args: FunInput T) : Type@{entree_u} :=
  **)
 
 (* The functor defining a single constructor of a fixtree *)
-Variant fixtreeF (F : Type@{entree_u} -> Type@{entree_u}) (R:Type@{entree_u}) : Type@{entree_u} :=
+Variant fixtreeF (F : Type@{itree_spec_u} -> Type@{itree_spec_u}) (R:Type@{itree_spec_u}) : Type@{itree_spec_u} :=
   | Fx_RetF (r : R)
   | Fx_TauF (t : F R)
   | Fx_VisF (e : E) (k : encodes e -> F R)
@@ -69,7 +70,7 @@ Variant fixtreeF (F : Type@{entree_u} -> Type@{entree_u}) (R:Type@{entree_u}) : 
 .
 
 (* "Tying the knot" by defining entrees as the greatest fixed-point of fixtreeF *)
-CoInductive fixtree R : Type@{entree_u} :=
+CoInductive fixtree R : Type@{itree_spec_u} :=
   go { _fxobserve : fixtreeF fixtree R }.
 
 (* Implicit arguments and helpful notations for fixtrees *)
@@ -95,7 +96,7 @@ Definition fxobserve {R} (t : fixtree R) : fixtree' R :=
 (* This defines the bind operation by coinduction on the left-hand side of the
    bind; can also be seen as "substituting" an observed computation tree ot for
    the return value of a continuation k *)
-Definition subst' {R S : Type@{entree_u}}
+Definition subst' {R S : Type@{itree_spec_u}}
            (k : R -> fixtree S) : fixtree' R -> fixtree S  :=
   cofix _subst (ot : fixtree' R) :=
     match ot with
@@ -107,17 +108,17 @@ Definition subst' {R S : Type@{entree_u}}
     end.
 
 (* Wrap up subst' so it operates on an fixtree instead of an fixtree' *)
-Definition subst {R S : Type@{entree_u}}
+Definition subst {R S : Type@{itree_spec_u}}
            (k : R -> fixtree S) : fixtree R -> fixtree S :=
   fun t => subst' k (fxobserve t).
 
 (* Monadic bind for fixtrees is just subst *)
-Definition bind {R S : Type@{entree_u}} 
+Definition bind {R S : Type@{itree_spec_u}} 
            (t : fixtree R) (k : R -> fixtree S) :=
   subst k t.
 
 (* Iterate a body on successive inputs of type I until it returns an R *)
-Definition iter {I R : Type@{entree_u}}
+Definition iter {I R : Type@{itree_spec_u}}
            (body : I -> fixtree (I + R)) : I -> fixtree R :=
   cofix _iter i :=
     bind (body i) (fun ir => match ir with
@@ -156,7 +157,7 @@ Definition caseSomeFxInterp T (d : SomeFxInterp) : option (FxInterp T) :=
   | right _ => None
   end.
 
-Definition FxInterps : Type@{entree_u} := list SomeFxInterp.
+Definition FxInterps : Type@{itree_spec_u} := list SomeFxInterp.
 
 Definition nthSomeFxInterp (defs : FxInterps) n : option SomeFxInterp :=
   nth_error defs n.
@@ -178,7 +179,7 @@ Definition callFxInterp (defs : FxInterps) (call : FunCall)
   end.
 
 (* A single function that gives an interpretation for a list of types *)
-Definition MultiFxInterp Ts : Type@{entree_u} :=
+Definition MultiFxInterp Ts : Type@{itree_spec_u} :=
   forall n (args:nthFunInput Ts n), fixtree (nthFunOutput args).
 
 (* Make a MultiFxInterp for the empty list of types *)

@@ -765,7 +765,7 @@ Qed.
 *)
 
 (* A FrameCall whose index is guaranteed to be below a given upper bound *)
-Definition FrameCallIxBelow frame k : Type@{entree_u} :=
+Definition FrameCallIxBelow frame k : Type@{itree_spec_u} :=
   { call : FrameCall frame | FrameCallIndex call < k }.
 
 Definition incrFrameCallIxBelow {frame k} (fcib : FrameCallIxBelow frame k) :

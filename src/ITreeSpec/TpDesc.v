@@ -24,14 +24,14 @@ Inductive Num : Type :=
 
 (* The descriptions of the types of expressions that can be used in type
 descriptions *)
-Inductive ExprKind : Type@{entree_u} :=
+Inductive ExprKind : Type@{itree_spec_u} :=
 | Kind_unit
 | Kind_bool
 | Kind_nat
 | Kind_num
 | Kind_bv (w:nat).
 
-Definition exprKindElem AK : Type@{entree_u} :=
+Definition exprKindElem AK : Type@{itree_spec_u} :=
   match AK with
   | Kind_unit => unit
   | Kind_bool => bool
@@ -51,8 +51,8 @@ Definition defaultEKElem EK : exprKindElem EK :=
 
 Class TpExprOps : Type :=
   {
-    TpExprUnOp : ExprKind -> ExprKind -> Type@{entree_u};
-    TpExprBinOp : ExprKind -> ExprKind -> ExprKind -> Type@{entree_u};
+    TpExprUnOp : ExprKind -> ExprKind -> Type@{itree_spec_u};
+    TpExprBinOp : ExprKind -> ExprKind -> ExprKind -> Type@{itree_spec_u};
     dec_eq_UnOp : forall {EK1 EK2} (op1 op2 : TpExprUnOp EK1 EK2), {op1=op2} + {~op1=op2};
     dec_eq_BinOp : forall {EK1 EK2 EK3} (op1 op2 : TpExprBinOp EK1 EK2 EK3), 
       {op1=op2} + {~op1=op2};
@@ -68,13 +68,13 @@ Context {Ops:TpExprOps}.
  ** Type descriptions themselves
  **)
 
-Inductive KindDesc : Type@{entree_u} :=
+Inductive KindDesc : Type@{itree_spec_u} :=
 | Kind_Expr (EK:ExprKind)
 | Kind_Tp
 .
 
 (* Expressions that can be used in type descriptions *)
-Inductive TpExpr : ExprKind -> Type@{entree_u} :=
+Inductive TpExpr : ExprKind -> Type@{itree_spec_u} :=
 | TpExpr_Const {EK} (c:exprKindElem EK) : TpExpr EK
 | TpExpr_Var {EK} (ix:nat) : TpExpr EK
 | TpExpr_UnOp {EK1 EK2} (op:TpExprUnOp EK1 EK2) (e:TpExpr EK1) : TpExpr EK2
@@ -93,7 +93,7 @@ Definition TpExprZ : TpExpr Kind_num := @TpExpr_Const Kind_num (TCNum 0).
 Definition TpExprInf : TpExpr Kind_num := @TpExpr_Const Kind_num TCInf.
 
 (* Descriptions of types *)
-Inductive TpDesc : Type@{entree_u} :=
+Inductive TpDesc : Type@{itree_spec_u} :=
 (* Monadic function types *)
 | Tp_M (R : TpDesc)
 | Tp_Pi (A : KindDesc) (B : TpDesc)
@@ -214,7 +214,7 @@ Definition proveEqKindDesc (K1 K2 : KindDesc) : option (K1 = K2) :=
  **)
 
 (* An element of a kind *)
-Definition kindElem K : Type@{entree_u} :=
+Definition kindElem K : Type@{itree_spec_u} :=
   match K with
   | Kind_Tp => TpDesc
   | Kind_Expr K' => exprKindElem K'
@@ -232,7 +232,7 @@ Definition defaultKindElem K : kindElem K :=
  **)
 
 (* An element of an environment is a value, i.e., an element of some kind *)
-Definition TpEnvElem : Type@{entree_u} := { K & kindElem K }.
+Definition TpEnvElem : Type@{itree_spec_u} := { K & kindElem K }.
 
 (* An environment is a substitution from variables to values *)
 Definition TpEnv := list TpEnvElem.
@@ -351,7 +351,7 @@ Definition unfoldIndTpDesc env A : TpDesc :=
   tpSubst 0 (@envConsElem Kind_Tp (tpSubst 0 env (Tp_Ind A)) env) A.
 
 (* Inductively defined elements of a type description *)
-Inductive indElem : TpDesc -> Type@{entree_u} :=
+Inductive indElem : TpDesc -> Type@{itree_spec_u} :=
 | Elem_M {R} (f:FunIx (Tp_M R)) : indElem (Tp_M R)
 | Elem_Pi {A B} (f:FunIx (Tp_Pi A B)) : indElem (Tp_Pi A B)
 | Elem_Arr {A B} (f:FunIx (Tp_Arr A B)) : indElem (Tp_Arr A B)
@@ -393,7 +393,7 @@ Fixpoint mkVecIndElemConst {T n} :
   end.
 
 (* Helper type for representing an inductive element of a sequence type *)
-Definition mseqIndElem (len:Num) A : Type@{entree_u} :=
+Definition mseqIndElem (len:Num) A : Type@{itree_spec_u} :=
   match len with
   | TCNum n => VectorDef.t (indElem A) n
   | TCInf => FunIx (Tp_Arr Tp_Nat (Tp_M A))
@@ -466,7 +466,7 @@ Proof. inversion elem. apply inj_pairT2 in H2. subst e1. assumption. Defined.
 
 (*
 (* Elements of a type description relative to an environment *)
-Fixpoint tpElemEnv env T : Type@{entree_u} :=
+Fixpoint tpElemEnv env T : Type@{itree_spec_u} :=
   match T with
   | Tp_M R => FunIx (tpSubst 0 env (Tp_M R))
   | Tp_Pi K B => FunIx (tpSubst 0 env (Tp_Pi K B))
@@ -545,7 +545,7 @@ Defined.
  **)
 
 (* A tuple of inputs to a functional type description *)
-Fixpoint TpFunInput env (T:TpDesc) : Type@{entree_u} :=
+Fixpoint TpFunInput env (T:TpDesc) : Type@{itree_spec_u} :=
   match T with
   | Tp_M _ => unit
   | Tp_Pi K B => { elem:kindElem K & TpFunInput (envConsElem elem env) B }
@@ -554,7 +554,7 @@ Fixpoint TpFunInput env (T:TpDesc) : Type@{entree_u} :=
   end.
 
 (* The output type of a monadic function of type T with the given inputs *)
-Fixpoint TpFunOutput {env T} : TpFunInput env T -> Type@{entree_u} :=
+Fixpoint TpFunOutput {env T} : TpFunInput env T -> Type@{itree_spec_u} :=
   match T return TpFunInput env T -> Type with
   | Tp_M R => fun _ => indElem (tpSubst 0 env R)
   | Tp_Pi K B => fun args => TpFunOutput (projT2 args)
@@ -571,7 +571,7 @@ Global Instance IsTpDesc_TpDesc : IsTpDesc TpDesc :=
   |}.
 
 (* A monadic function of a given type description *)
-Fixpoint indFun (E:EvType) env T : Type@{entree_u} :=
+Fixpoint indFun (E:EvType) env T : Type@{itree_spec_u} :=
   match T with
   | Tp_M R => fixtree TpDesc E (indElem (tpSubst 0 env R))
   | Tp_Pi K B => forall (elem:kindElem K), indFun E (envConsElem elem env) B

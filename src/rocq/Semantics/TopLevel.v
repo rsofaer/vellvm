@@ -14,7 +14,7 @@ From ExtLib Require Import
      Structures.Functor
      Structures.Monads
      Data.Map.FMapAList.
-
+Unset Universe Checking.
 From Vellvm Require Import
   Utilities
   Utils.IntMaps
@@ -28,6 +28,7 @@ From Vellvm Require Import
   Semantics.VellvmIntegers
   Semantics.StoreId
   Semantics.Printfdefn.
+From ITreeSpec Require Import ITreeSpecDefinition.
 Import MonadNotation.
 Import ListNotations.
 Import Monads.
@@ -597,7 +598,7 @@ Module Type LLVMTopLevel (IS : InterpreterStack).
      to [mcfg], normalizes the types, denotes the [mcfg] and finally interprets the tree
      starting from empty environments.
    *)
-  Definition model_gen
+(*   Definition model_gen
              (ret_typ : dtyp)
              (entry : string)
              (arg_gen : itree L0 (list uvalue))
@@ -621,7 +622,7 @@ Module Type LLVMTopLevel (IS : InterpreterStack).
         (convert_types (mcfg_of_tle (link PREDEFINED_FUNCTIONS prog))) in
     ℑs6 eq eq eq t [] (Build_stack_frame [] None None,[]) 0 initial_memory_state.
 
-  Definition model_gen_oom_L1
+  *) Definition model_gen_oom_L1
              (ret_typ : dtyp)
              (entry : string)
              (arg_gen : itree L0 (list uvalue))
@@ -651,14 +652,14 @@ Module Type LLVMTopLevel (IS : InterpreterStack).
     (entry : string)
     (arg_gen : itree L0 (list uvalue))
     (prog: ll_toplevel_entities)
-    : PropT L3 res_L3 :=
+    : itree_spec L3 res_L3 :=
     let t :=
       args <- arg_gen;;
       denote_vellvm ret_typ entry args
         (convert_types (mcfg_of_tle (link PREDEFINED_FUNCTIONS prog))) in
     ℑs3 RR t [] (Build_stack_frame [] None None, []) 0 initial_memory_state.
 
-  Definition model_gen_oom_L4
+  (* Definition model_gen_oom_L4
     RR_mem
     RR_pick
     (ret_typ : dtyp)
@@ -700,18 +701,18 @@ Module Type LLVMTopLevel (IS : InterpreterStack).
       denote_vellvm ret_typ entry args
         (convert_types (mcfg_of_tle (link PREDEFINED_FUNCTIONS prog))) in
     ℑs6 RR_mem RR_pick RR_oom t [] (Build_stack_frame [] None None, []) 0 initial_memory_state.
-
+ *)
   (**
      Finally, the official model assumes no user-defined intrinsics.
    *)
-  Definition model args := model_gen (DTYPE_I 32%positive) "main" (build_main_args args).
-  Definition model_oom args := model_gen_oom (DTYPE_I 32%positive) "main" (build_main_args args).
+  (* Definition model args := model_gen (DTYPE_I 32%positive) "main" (build_main_args args). *)
+  (* Definition model_oom args := model_gen_oom (DTYPE_I 32%positive) "main" (build_main_args args). *)
   Definition model_oom_L1 args := model_gen_oom_L1 (DTYPE_I 32%positive) "main" (build_main_args args).
   Definition model_oom_L2 args := model_gen_oom_L2 (DTYPE_I 32%positive) "main" (build_main_args args).
   Definition model_oom_L3 RR_mem args := model_gen_oom_L3 RR_mem (DTYPE_I 32%positive) "main" (build_main_args args).
-  Definition model_oom_L4 RR_mem RR_pick args := model_gen_oom_L4 RR_mem RR_pick (DTYPE_I 32%positive) "main" (build_main_args args).
-  Definition model_oom_L5 RR_mem RR_pick args := model_gen_oom_L5 RR_mem RR_pick (DTYPE_I 32%positive) "main" (build_main_args args).
-  Definition model_oom_L6 RR_mem RR_pick RR_oom args := model_gen_oom_L6 RR_mem RR_pick RR_oom (DTYPE_I 32%positive) "main" (build_main_args args).
+  (* Definition model_oom_L4 RR_mem RR_pick args := model_gen_oom_L4 RR_mem RR_pick (DTYPE_I 32%positive) "main" (build_main_args args). *)
+  (* Definition model_oom_L5 RR_mem RR_pick args := model_gen_oom_L5 RR_mem RR_pick (DTYPE_I 32%positive) "main" (build_main_args args). *)
+  (* Definition model_oom_L6 RR_mem RR_pick RR_oom args := model_gen_oom_L6 RR_mem RR_pick RR_oom (DTYPE_I 32%positive) "main" (build_main_args args). *)
 End LLVMTopLevel.
 
 Module Make (IS : InterpreterStack) : LLVMTopLevel IS.

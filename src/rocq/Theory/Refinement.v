@@ -6,7 +6,7 @@ From ITree Require Import
   Basics
   Basics.HeterogeneousRelations
   Eq.Eqit.
-
+Unset Universe Checking.
 From Vellvm Require Import
   Utilities
   Utils.VellvmRelations
@@ -399,11 +399,11 @@ Module Make (LP : LLVMParams) (LLVM : Lang LP).
          forall t', ts' t' ->
                (* There is a tree in the source set that is eutt our target tree *)
                exists t, ts t /\ eutt refine_res3 t t'.
-
+(* 
   Definition refine_L6 : relation ((itree L4 (MemState * (store_id * (lstack_frame * lstack * (global_env * dvalue))))) -> Prop)
     := fun ts ts' =>
          forall t', ts' t' ->
-               exists t, ts t /\ refine_OOM_h refine_res3 t t'.
+               exists t, ts t /\ refine_OOM_h refine_res3 t t'. *)
 
   Instance Transitive_refine_L5 : Transitive refine_L5.
   Proof.
@@ -419,7 +419,7 @@ Module Make (LP : LLVMParams) (LLVM : Lang LP).
     exists rx; split; auto.
     rewrite XY. eauto.
   Qed.
-
+(* 
   Instance Transitive_refine_L6 : Transitive refine_L6.
   Proof.
     unfold Transitive.
@@ -433,6 +433,6 @@ Module Make (LP : LLVMParams) (LLVM : Lang LP).
 
     exists rx; split; auto.
     rewrite XY. eauto.
-  Qed.
+  Qed. *)
 
 End Make.

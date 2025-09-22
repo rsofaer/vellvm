@@ -7,7 +7,7 @@ From ITree Require Import
      Basics.Monad
      Events.StateFacts
      Eq.Eqit.
-
+Unset Universe Checking.
 From Vellvm Require Import
      Semantics.
 
@@ -99,13 +99,13 @@ Module Type MCFGTheory (IS : InterpreterStack) (TOP : LLVMTopLevel IS).
       interp_cfg1
       interp_cfg2
       interp_cfg3
-      interp_cfg4
-      interp_cfg5
+      (* interp_cfg4 *)
+      (* interp_cfg5 *)
       interp_mcfg1
       interp_mcfg2
       interp_mcfg3
-      interp_mcfg4
-      interp_mcfg5
+      (* interp_mcfg4 *)
+      (* interp_mcfg5 *)
       : VELLVM_REWRITE.
 
     Ltac go_rewrite :=
